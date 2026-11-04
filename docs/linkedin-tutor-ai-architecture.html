@@ -1,0 +1,467 @@
+<title>LinkedIn Tutor AI · Arquitectura</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: sticky left index + single reading column; chips collapse under header on mobile. */
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --surface-2:#eef1f5; --fg:#1b2230; --muted:#5b6573;
+  --accent:#0f766e; --accent-ink:#0b524c; --rule:#e3e6ec; --code-bg:#eef1f5; --code-fg:#243044;
+  --good:#15803d; --warn:#b45309; --crit:#b91c1c;
+  --font-display:'Fraunces',Georgia,serif; --font-body:'Manrope',system-ui,sans-serif; --font-mono:'JetBrains Mono',ui-monospace,monospace;
+  --maxw:920px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f1419; --surface:#161c24; --surface-2:#11161d; --fg:#e6e9ee; --muted:#8b94a3;
+  --accent:#2dd4bf; --accent-ink:#5eead4; --rule:#232b36; --code-bg:#11161d; --code-fg:#cdd6e3;
+  --good:#4ade80; --warn:#fbbf24; --crit:#f87171; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0f1419; --surface:#161c24; --surface-2:#11161d; --fg:#e6e9ee; --muted:#8b94a3;
+  --accent:#2dd4bf; --accent-ink:#5eead4; --rule:#232b36; --code-bg:#11161d; --code-fg:#cdd6e3;
+  --good:#4ade80; --warn:#fbbf24; --crit:#f87171; color-scheme:dark;
+}
+html{scroll-behavior:smooth; scroll-padding-top:96px}
+body{
+  background:var(--bg); color:var(--fg); font-family:var(--font-body); font-size:16px; line-height:1.65;
+  margin:0; padding-block:0; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px));
+  -webkit-font-smoothing:antialiased;
+}
+/* sticky band behind top bar */
+body::before{content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top,0px); z-index:10; background:var(--bg)}
+
+/* ---------- Top bar ---------- */
+header.top{
+  position:sticky; top:env(safe-area-inset-top,0px); z-index:9;
+  background:color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter:saturate(140%) blur(10px);
+  border-bottom:1px solid var(--rule);
+  padding-block:14px; margin:0 calc(-1 * max(16px,env(safe-area-inset-left,0px))) 0 calc(-1 * max(16px,env(safe-area-inset-right,0px)));
+  padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+header.top .row{max-width:1180px; margin-inline:auto; display:flex; align-items:baseline; gap:16px; flex-wrap:wrap}
+header.top .brand{font-family:var(--font-display); font-weight:600; font-size:20px; letter-spacing:-.01em; font-variation-settings:"opsz" 24}
+header.top .brand .dot{color:var(--accent)}
+header.top .sub{color:var(--muted); font-size:13px}
+header.top .meta{margin-left:auto; display:flex; gap:8px; flex-wrap:wrap}
+.chip{font-size:11px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:var(--accent-ink);
+  border:1px solid color-mix(in srgb,var(--accent) 35%,transparent); background:color-mix(in srgb,var(--accent) 8%,transparent);
+  padding:4px 9px; border-radius:999px}
+.chip.neutral{color:var(--muted); border-color:var(--rule); background:var(--surface-2)}
+
+/* ---------- Layout grid ---------- */
+.shell{max-width:1180px; margin-inline:auto; display:grid; grid-template-columns:232px 1fr; gap:40px; padding-block:40px 80px}
+aside.toc{position:sticky; top:88px; align-self:start; max-height:calc(100vh - 110px); overflow:auto; font-size:13.5px}
+aside.toc h4{font-family:var(--font-body); font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); margin:0 0 10px; font-weight:700}
+aside.toc ol{list-style:none; margin:0; padding:0; counter-reset:sec}
+aside.toc li{counter-increment:sec; margin:0}
+aside.toc a{display:flex; gap:9px; color:var(--muted); text-decoration:none; padding:5px 0; border-left:2px solid transparent; padding-left:10px; margin-left:-2px; transition:color .15s}
+aside.toc a::before{content:counter(sec,decimal-leading-zero); font-family:var(--font-mono); font-size:11px; color:var(--accent); opacity:.7; min-width:20px}
+aside.toc a:hover{color:var(--fg)}
+aside.toc a.active{color:var(--fg); border-left-color:var(--accent); font-weight:600}
+
+main{min-width:0; max-width:var(--maxw)}
+
+/* ---------- Type ---------- */
+.eyebrow{font-family:var(--font-mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); margin:0 0 8px}
+h1.lead{font-family:var(--font-display); font-weight:500; font-size:clamp(30px,5vw,44px); line-height:1.08; letter-spacing:-.02em; margin:0 0 16px; text-wrap:balance; font-variation-settings:"opsz" 60}
+h1.lead em{font-style:italic; color:var(--accent)}
+.lede{font-size:18px; color:var(--muted); max-width:62ch; margin:0 0 8px}
+section{padding-block:34px; border-top:1px solid var(--rule); scroll-margin-top:96px}
+section:first-of-type{border-top:0}
+h2{font-family:var(--font-display); font-weight:500; font-size:27px; letter-spacing:-.01em; margin:0 0 14px; text-wrap:balance; font-variation-settings:"opsz" 36}
+h2 .n{font-family:var(--font-mono); font-size:14px; color:var(--accent); vertical-align:6px; margin-right:10px; font-weight:600}
+h3{font-family:var(--font-body); font-weight:700; font-size:16px; margin:26px 0 10px; color:var(--fg)}
+p{margin:0 0 14px}
+strong{font-weight:700}
+a.lnk{color:var(--accent); text-decoration:underline; text-underline-offset:2px}
+ul,ol.body{margin:0 0 16px; padding-left:20px}
+ul li, ol.body li{margin:0 0 7px}
+code{font-family:var(--font-mono); font-size:.88em; background:var(--code-bg); color:var(--code-fg); padding:1px 5px; border-radius:4px}
+
+/* ---------- Code / tree blocks ---------- */
+pre.code, pre.tree{
+  font-family:var(--font-mono); font-size:13px; line-height:1.7; color:var(--code-fg);
+  background:var(--code-bg); border:1px solid var(--rule); border-radius:10px;
+  padding:16px 18px; overflow-x:auto; margin:0 0 16px; tab-size:2;
+}
+pre.tree{color:var(--fg)}
+pre.tree .dir{color:var(--accent); font-weight:600}
+pre.tree .dim{color:var(--muted)}
+pre.tree .cmt{color:var(--muted); font-style:italic}
+pre.tree .file{color:var(--fg)}
+
+/* ---------- Tables ---------- */
+.tbl-wrap{overflow-x:auto; margin:0 0 16px; border:1px solid var(--rule); border-radius:10px}
+table{border-collapse:collapse; width:100%; font-size:13.5px; background:var(--surface)}
+th,td{text-align:left; padding:10px 14px; border-bottom:1px solid var(--rule); vertical-align:top}
+th{font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); font-weight:700; background:var(--surface-2)}
+tr:last-child td{border-bottom:0}
+td code{white-space:nowrap}
+.pill{font-size:11px; font-weight:600; padding:2px 8px; border-radius:5px; display:inline-block}
+.pill.d{color:var(--good); background:color-mix(in srgb,var(--good) 14%,transparent)}
+.pill.a{color:var(--accent-ink); background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.pill.w{color:var(--warn); background:color-mix(in srgb,var(--warn) 16%,transparent)}
+.pill.c{color:var(--crit); background:color-mix(in srgb,var(--crit) 14%,transparent)}
+
+/* ---------- Cards / lists ---------- */
+.grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin:0 0 16px}
+.card{background:var(--surface); border:1px solid var(--rule); border-radius:10px; padding:15px 16px}
+.card h4{margin:0 0 6px; font-size:14px; font-weight:700}
+.card p{margin:0; font-size:13.5px; color:var(--muted)}
+.card .tag{font-family:var(--font-mono); font-size:11px; color:var(--accent); margin-bottom:6px; display:block}
+
+dl.stack{display:grid; grid-template-columns:max-content 1fr; gap:6px 18px; margin:0 0 16px; font-size:14px}
+dl.stack dt{color:var(--muted); font-weight:600}
+dl.stack dd{margin:0}
+dl.stack code{font-size:.85em}
+
+.note{border-left:3px solid var(--accent); background:color-mix(in srgb,var(--accent) 7%,transparent); padding:12px 16px; border-radius:0 8px 8px 0; margin:0 0 16px; font-size:14px}
+.note .t{font-weight:700; display:block; margin-bottom:3px}
+
+/* mermaid */
+.mermaid{background:var(--surface); border:1px solid var(--rule); border-radius:10px; padding:18px; margin:0 0 16px; overflow-x:auto; text-align:center}
+
+/* mobile chip nav */
+.chips{display:none; gap:7px; overflow-x:auto; padding:10px 0 0; scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chips a{flex:0 0 auto; font-family:var(--font-mono); font-size:11px; text-decoration:none; color:var(--muted);
+  border:1px solid var(--rule); border-radius:999px; padding:4px 10px; background:var(--surface)}
+
+footer.foot{border-top:1px solid var(--rule); padding-block:22px; color:var(--muted); font-size:13px; display:flex; gap:14px; flex-wrap:wrap; justify-content:space-between}
+
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr; gap:0; padding-top:24px}
+  aside.toc{display:none}
+  .chips{display:flex}
+  main{max-width:100%}
+}
+</style>
+<header class="top">
+  <div class="row">
+    <div>
+      <div class="brand">LinkedIn Tutor<span class="dot">·</span>AI</div>
+      <div class="sub">Arquitectura de la solución · ASP.NET Core 10 + Azure AI Foundry</div>
+    </div>
+    <div class="meta">
+      <span class="chip">.NET 10</span>
+      <span class="chip">Blazor Interactive Server</span>
+      <span class="chip">Azure AI Foundry</span>
+      <span class="chip neutral">Agente existente</span>
+    </div>
+  </div>
+  <nav class="chips">
+    <a href="#s1">01 Carpetas</a><a href="#s2">02 Proyectos</a><a href="#s3">03 Interfaces</a>
+    <a href="#s4">04 Servicios</a><a href="#s5">05 DTOs</a><a href="#s6">06 Flujo</a>
+    <a href="#s7">07 Errores</a><a href="#s8">08 Config</a><a href="#s9">09 NuGet</a><a href="#s10">10 Justificación</a>
+  </nav>
+</header>
+
+<div class="shell">
+  <aside class="toc">
+    <h4>Contenido</h4>
+    <ol>
+      <li><a href="#s1">Estructura de carpetas</a></li>
+      <li><a href="#s2">Proyectos recomendados</a></li>
+      <li><a href="#s3">Interfaces</a></li>
+      <li><a href="#s4">Servicios</a></li>
+      <li><a href="#s5">DTOs</a></li>
+      <li><a href="#s6">Flujo de llamadas</a></li>
+      <li><a href="#s7">Manejo de errores</a></li>
+      <li><a href="#s8">Configuración</a></li>
+      <li><a href="#s9">Dependencias NuGet</a></li>
+      <li><a href="#s10">Justificación técnica</a></li>
+    </ol>
+  </aside>
+
+  <main>
+    <p class="eyebrow">Documento de arquitectura · v1.0</p>
+    <h1 class="lead">Arquitectura de <em>LinkedIn Tutor AI</em></h1>
+    <p class="lede">Una aplicación Blazor Web App en modo Interactive Server que actúa como tutor de LinkedIn, consumiendo un agente ya existente en Azure AI Foundry. Diseño en Clean Architecture, autenticación dual y soporte de chat con y sin streaming.</p>
+
+    <!-- 01 -->
+    <section id="s1">
+      <h2><span class="n">01</span>Estructura de carpetas</h2>
+      <p>Solución Clean Architecture de cuatro capas, con <code>src/</code> para el código de producción y <code>tests/</code> espejando la estructura. La regla de dependencias es estricta y unidireccional: <strong>Domain ← Application ← Infrastructure ← Web</strong>.</p>
+<pre class="tree"><span class="dim">LinkedInTutorAI/</span>
+├─ <span class="file">LinkedInTutorAI.sln</span>
+├─ <span class="dir">src/</span>
+│  ├─ <span class="dir">LinkedInTutorAI.Domain/</span>            <span class="cmt"># núcleo puro, sin dependencias externas</span>
+│  │  ├─ <span class="dir">Entities/</span>          ChatMessage · ChatThread · TutorSession · LinkedInProfile
+│  │  ├─ <span class="dir">Enums/</span>             AuthorRole · MessageStatus · AuthMode · FinishReason
+│  │  ├─ <span class="dir">Exceptions/</span>        DomainException · SessionNotFoundException
+│  │  └─ <span class="dir">Abstractions/</span>      ITutorSessionRepository
+│  │
+│  ├─ <span class="dir">LinkedInTutorAI.Application/</span>     <span class="cmt"># casos de uso + contratos</span>
+│  │  ├─ <span class="dir">Abstractions/</span>      IAiFoundryAgentService · IChatOrchestrator · ITutorSessionService
+│  │  ├─ <span class="dir">Dtos/</span>              ChatRequestDto · ChatResponseDto · ChatStreamChunkDto · SessionDto · ErrorDto
+│  │  ├─ <span class="dir">Options/</span>           TutorOptions
+│  │  ├─ <span class="dir">Orchestrators/</span>     ChatOrchestrator
+│  │  ├─ <span class="dir">Mappings/</span>          ChatMapper
+│  │  ├─ <span class="dir">Validation/</span>        ChatRequestValidator
+│  │  └─ <span class="dir">Exceptions/</span>        AiFoundryException · AiFoundryTimeoutException · AiFoundryThrottledException
+│  │
+│  ├─ <span class="dir">LinkedInTutorAI.Infrastructure/</span>  <span class="cmt"># implementaciones concretas</span>
+│  │  ├─ <span class="dir">AiFoundry/</span>         AgentsAiFoundryAgentService · AiFoundryCredentialFactory · AgentMessageMapper
+│  │  ├─ <span class="dir">Persistence/</span>       InMemoryTutorSessionRepository <span class="cmt">(o EF Core SQLite)</span>
+│  │  ├─ <span class="dir">Resilience/</span>        PollyPolicies
+│  │  └─ <span class="dir">Configuration/</span>     ServiceCollectionExtensions <span class="cmt">(AddAiFoundry)</span>
+│  │
+│  └─ <span class="dir">LinkedInTutorAI.Web/</span>              <span class="cmt"># host Blazor · composition root</span>
+│     ├─ <span class="file">Program.cs</span>          App.razor · Routes.razor
+│     ├─ <span class="dir">Components/</span>
+│     │  ├─ <span class="dir">Pages/</span>           Home.razor · TutorChat.razor
+│     │  ├─ <span class="dir">Layout/</span>          MainLayout.razor
+│     │  └─ <span class="dir">Shared/</span>          ChatBubble.razor · TypingIndicator.razor
+│     ├─ <span class="dir">State/</span>             TutorChatState <span class="cmt">(estado del circuito)</span>
+│     ├─ <span class="dir">Endpoints/</span>         ChatEndpoints <span class="cmt">(Minimal API opcional)</span>
+│     └─ <span class="file">appsettings.json</span>
+│
+└─ <span class="dir">tests/</span>
+   ├─ <span class="dir">LinkedInTutorAI.Domain.Tests/</span>
+   ├─ <span class="dir">LinkedInTutorAI.Application.Tests/</span>
+   └─ <span class="dir">LinkedInTutorAI.Infrastructure.Tests/</span>
+</pre>
+      <p class="note"><span class="t">Convención de命名</span>Los proyectos conservan el prefijo <code>LinkedInTutorAI</code> para evitar colisiones de namespaces y facilitar el despliegue con un solo ensamblado raíz. <code>Web</code> es el único proyecto con <code>Microsoft.NET.Sdk.Web</code>.</p>
+    </section>
+
+    <!-- 02 -->
+    <section id="s2">
+      <h2><span class="n">02</span>Proyectos recomendados</h2>
+      <p>Cuatro proyectos con responsabilidades exclusivas. La composición final ocurre en <code>Web</code>, que referencia <code>Infrastructure</code> y <code>Application</code> pero nunca al SDK de Azure directamente.</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Proyecto</th><th>SDK</th><th>Rol</th><th>Depende de</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Domain</strong></td><td><code>Microsoft.NET.Sdk</code></td><td>Entidades, enums, excepciones de dominio y abstracciones de repositorios. Cero dependencias externas.</td><td><span class="pill d">— ninguno</span></td></tr>
+          <tr><td><strong>Application</strong></td><td><code>Microsoft.NET.Sdk</code></td><td>Casos de uso (orquestador), DTOs, opciones validadas, validación de entrada y excepciones de aplicación. No conoce Azure.</td><td><span class="pill d">Domain</span></td></tr>
+          <tr><td><strong>Infrastructure</strong></td><td><code>Microsoft.NET.Sdk</code></td><td>Implementa el servicio del agente con el SDK de Azure AI Foundry, fábrica de credenciales, persistencia y políticas de resiliencia.</td><td><span class="pill d">Application, Domain</span></td></tr>
+          <tr><td><strong>Web</strong></td><td><code>Microsoft.NET.Sdk.Web</code></td><td>Blazor Web App Interactive Server: UI, estado del circuito, composition root (DI), endpoints y configuración.</td><td><span class="pill d">Application, Infrastructure</span></td></tr>
+        </tbody>
+      </table></div>
+      <h3>Grafo de dependencias</h3>
+      <pre class="mermaid">
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#0f766e","primaryTextColor":"#ffffff","primaryBorderColor":"#0b524c","lineColor":"#5b6573","fontFamily":"Manrope, sans-serif"}} }%%
+flowchart LR
+  W["Web<br/><b>Blazor Web App</b>"] --> I["Infrastructure<br/><b>Azure AI Foundry SDK</b>"]
+  W --> A["Application<br/><b>Casos de uso · DTOs</b>"]
+  I --> A
+  A --> D["Domain<br/><b>Entidades · Abstracciones</b>"]
+      </pre>
+      <p>La flecha <code>A → D</code> significa “A depende de D”. El SDK de Azure vive solo en <code>Infrastructure</code>; cambiar de proveedor de IA tocaría únicamente esa capa.</p>
+    </section>
+
+    <!-- 03 -->
+    <section id="s3">
+      <h2><span class="n">03</span>Interfaces</h2>
+      <p>Los contratos viven en <code>Application</code> y <code>Domain</code>. <code>Web</code> y <code>Infrastructure</code> programan contra abstracciones, nunca contra implementaciones concretas.</p>
+      <h3>Domain</h3>
+      <dl class="stack">
+        <dt><code>ITutorSessionRepository</code></dt><dd>Persistencia de sesiones y mensajes: <code>GetByIdAsync</code>, <code>GetByUserAsync</code>, <code>SaveAsync</code>, <code>AddMessageAsync</code>.</dd>
+        <dt><code>IAggregateRoot</code></dt><dd>Marker para raíces de agregado (opcional, para orden académico).</dd>
+      </dl>
+      <h3>Application</h3>
+      <dl class="stack">
+        <dt><code>IAiFoundryAgentService</code></dt><dd>Contrato del agente. <code>AskAsync(request, ct) → ChatResponseDto</code> y <code>AskStreamAsync(request, ct) → IAsyncEnumerable&lt;ChatStreamChunkDto&gt;</code>.</dd>
+        <dt><code>IChatOrchestrator</code></dt><dd>Caso de uso central. <code>HandleUserMessageAsync</code> y <code>HandleUserMessageStreamAsync</code>: valida, carga sesión, llama al agente, persiste, mapea.</dd>
+        <dt><code>ITutorSessionService</code></dt><dd>Ciclo de vida de sesión: crear, cargar historial, listar.</dd>
+        <dt><code>IOptions&lt;TutorOptions&gt;</code></dt><dd>Acceso tipado y validado a la configuración del agente.</dd>
+      </dl>
+      <p class="note"><span class="t">Por qué el contrato del agente está en Application</span>Si pusieras <code>IAiFoundryAgentService</code> en <code>Infrastructure</code>, <code>Application</code> no podría referenciarlo sin invertir la flecha de dependencia. Al declararlo en <code>Application</code> e implementarlo en <code>Infrastructure</code> se resperta la inversión de dependencias (DIP).</p>
+    </section>
+
+    <!-- 04 -->
+    <section id="s4">
+      <h2><span class="n">04</span>Servicios</h2>
+      <p>Una implementación por contrato, con responsabilidades finas. El orquestador es el único que conoce el flujo completo; el servicio de Azure solo habla con Foundry.</p>
+      <div class="grid2">
+        <div class="card"><span class="tag">Infrastructure · AiFoundry</span><h4>AgentsAiFoundryAgentService</h4><p>Implementa <code>IAiFoundryAgentService</code>. Recupera el agente existente por <code>AgentId</code>, crea/abre un thread, añade el mensaje del usuario, lanza el <code>run</code> y expone los eventos de streaming como <code>IAsyncEnumerable</code>.</p></div>
+        <div class="card"><span class="tag">Infrastructure · AiFoundry</span><h4>AiFoundryCredentialFactory</h4><p>Devuelve <code>DefaultAzureCredential</code> o <code>AzureKeyCredential</code> según <code>TutorOptions.AuthMode</code>. Único punto que decide cómo autenticarse.</p></div>
+        <div class="card"><span class="tag">Infrastructure · AiFoundry</span><h4>AgentMessageMapper</h4><p>Traduce entre los modelos del SDK de Azure (<code>AgentMessage</code>, <code>RunStreamEvent</code>) y los DTOs de Application. Aísla a la app de la forma del SDK.</p></div>
+        <div class="card"><span class="tag">Infrastructure · Persistence</span><h4>InMemoryTutorSessionRepository</h4><p>Persistencia académica por circuito. Sustituible por EF Core + SQLite sin tocar Application.</p></div>
+        <div class="card"><span class="tag">Application</span><h4>ChatOrchestrator</h4><p>Valida la entrada, carga/crea la sesión, persiste el mensaje del usuario, invoca al agente, persiste la respuesta del asistente y mapea. Propaga <code>CancellationToken</code> en todo el camino.</p></div>
+        <div class="card"><span class="tag">Application</span><h4>TutorSessionService</h4><p>CRUD de sesiones contra el repositorio. Expone historial paginado a la UI.</p></div>
+        <div class="card"><span class="tag">Web · State</span><h4>TutorChatState</h4><p>Estado del componente Blazor: lista de mensajes, <code>IsStreaming</code>, error actual. Llama al orquestador y dispara <code>StateHasChanged</code> por cada chunk.</p></div>
+        <div class="card"><span class="tag">Web · Endpoints</span><h4>ChatEndpoints</h4><p>Minimal API opcional (<code>POST /api/chat</code>) para exponer el tutor también como REST, no solo Blazor.</p></div>
+      </div>
+    </section>
+
+    <!-- 05 -->
+    <section id="s5">
+      <h2><span class="n">05</span>DTOs</h2>
+      <p>Todos los DTOs viven en <code>Application/Dtos</code>. Son la única forma de datos que cruza hacia <code>Web</code>; los modelos del SDK de Azure nunca llegan a la UI.</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>DTO</th><th>Campos clave</th><th>Uso</th></tr></thead>
+        <tbody>
+          <tr><td><code>ChatRequestDto</code></td><td>SessionId, UserMessage, LinkedInProfile</td><td>Entrada del usuario + contexto de perfil para personalizar la tutoría.</td></tr>
+          <tr><td><code>ChatResponseDto</code></td><td>SessionId, MessageId, AssistantMessage, FinishReason, CreatedAt</td><td>Respuesta completa (modo no-streaming).</td></tr>
+          <tr><td><code>ChatStreamChunkDto</code></td><td>Delta, IsFinal, MessageId, SessionId</td><td>Token incremental para streaming; <code>IsFinal</code> cierra el stream.</td></tr>
+          <tr><td><code>SessionDto</code></td><td>Id, UserId, Title, CreatedAt, Messages[]</td><td>Vista de una sesión con su historial.</td></tr>
+          <tr><td><code>MessageDto</code></td><td>Id, Role (User/Assistant), Content, CreatedAt</td><td>Mensaje individual dentro del historial.</td></tr>
+          <tr><td><code>LinkedInProfileDto</code></td><td>Headline, Industry, ExperienceYears, Goals</td><td>Contexto de LinkedIn que enriquece el prompt del tutor.</td></tr>
+          <tr><td><code>ErrorDto</code></td><td>Code, Message, Details, TraceId</td><td>Representación segura de error para la UI (sin secretos ni stack traces).</td></tr>
+          <tr><td><code>TutorOptions</code></td><td>Endpoint, ProjectConnectionString, AgentId, ModelDeployment, AuthMode, ApiKey, MaxRetries, TimeoutSeconds</td><td>POCO de configuración tipada y validada con <code>IOptions&lt;T&gt;</code>.</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note"><span class="t">Perfil de LinkedIn como contexto</span>El <code>LinkedInProfileDto</code> no se guarda del lado del agente necesariamente; se inyecta como contexto en cada mensaje para que el tutor responda acorde al perfil y objetivos del usuario.</p>
+    </section>
+
+    <!-- 06 -->
+    <section id="s6">
+      <h2><span class="n">06</span>Flujo de llamadas</h2>
+      <p>El modo streaming es el camino principal y el que más aprovecha el modelo server-side: los tokens viajan por <code>IAsyncEnumerable</code> sobre el circuito SignalR de Blazor y se renderizan token a token. El modo no-streaming sigue el mismo camino pero devuelve un <code>ChatResponseDto</code> completo al finalizar.</p>
+      <pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant U as Usuario
+  participant UI as TutorChat.razor
+  participant S as TutorChatState
+  participant O as ChatOrchestrator
+  participant A as AgentsAiFoundryService
+  participant R as SessionRepository
+  participant F as Azure AI Foundry (agente)
+  U->>UI: escribe mensaje
+  UI->>S: SendAsync(text)
+  S->>O: HandleUserMessageStreamAsync(sessionId, text, ct)
+  O->>R: cargar sesión + persistir msg User
+  O->>A: AskStreamAsync(ChatRequestDto, ct)
+  A->>F: abrir thread + añadir mensaje + run(agentId)
+  loop streaming de eventos
+    F-->>A: RunStreamEvent (delta token)
+    A-->>O: ChatStreamChunkDto
+    O-->>S: chunk vía IAsyncEnumerable
+    S-->>UI: StateHasChanged (token a token)
+  end
+  O->>R: persistir msg Assistant (ensamblado)
+  O-->>S: stream completado
+  S-->>UI: fin · IsStreaming=false
+      </pre>
+      <h3>Puntos de cancelación</h3>
+      <ul>
+        <li>El <code>CancellationToken</code> nace en el evento de UI (clic en “Detener”) y se propaga: <code>State → Orchestrator → AgentService → run de Foundry</code>.</li>
+        <li>Al cancelar, el orquestador detiene la enumeración y marca el último chunk parcial como no-final; la sesión conserva el mensaje del usuario para reintentar.</li>
+        <li>El circuito Blazor cerrado por el navegador cancela automáticamente el stream (SignalR libera el <code>cts</code>).</li>
+      </ul>
+    </section>
+
+    <!-- 07 -->
+    <section id="s7">
+      <h2><span class="n">07</span>Manejo de errores</h2>
+      <p>Estrategia por capas: las excepciones de dominio son semánticas, las del SDK de Azure se traducen en la frontera de <code>Infrastructure</code>, y <code>Web</code> solo recibe <code>ErrorDto</code> en español, sin secretos ni trazas técnicas.</p>
+      <h3>Mapa de traducción de errores</h3>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Origen</th><th>HTTP / condición</th><th>Excepción de Application</th><th>Severidad</th><th>Mensaje al usuario</th></tr></thead>
+        <tbody>
+          <tr><td>Validación</td><td>mensaje vacío / &gt; 4000 chars</td><td><code>ValidationException</code></td><td><span class="pill w">validación</span></td><td>“Escribe un mensaje válido para continuar.”</td></tr>
+          <tr><td>Azure</td><td>401 / 403</td><td><code>AiFoundryAuthException</code></td><td><span class="pill c">crítico</span></td><td>“No se pudo autenticar con el tutor. Revisa la configuración.”</td></tr>
+          <tr><td>Azure</td><td>408 / 504</td><td><code>AiFoundryTimeoutException</code></td><td><span class="pill w">aviso</span></td><td>“El tutor tardó demasiado. Intenta de nuevo.”</td></tr>
+          <tr><td>Azure</td><td>429</td><td><code>AiFoundryThrottledException</code></td><td><span class="pill w">aviso</span></td><td>“Demasiadas solicitudes. Espera unos segundos.”</td></tr>
+          <tr><td>Azure</td><td>5xx</td><td><code>AiFoundryUnavailableException</code></td><td><span class="pill w">aviso</span></td><td>“El tutor no está disponible ahora. Intenta más tarde.”</td></tr>
+          <tr><td>Dom.</td><td>sesión inexistente</td><td><code>SessionNotFoundException</code></td><td><span class="pill w">aviso</span></td><td>“No se encontró la sesión. Se creó una nueva.”</td></tr>
+        </tbody>
+      </table></div>
+      <h3>Mecanismos</h3>
+      <ul>
+        <li><strong>Resiliencia (Polly):</strong> retry con backoff exponencial + jitter para 429/5xx, circuit breaker tras N fallos consecutivos, timeout por llamada. Configurable en <code>TutorOptions</code>.</li>
+        <li><strong>Cancelación:</strong> <code>CancellationToken</code> en toda la cadena; el circuito caído cancela el run de Foundry.</li>
+        <li><strong>Boundaries:</strong> <code>Infrastructure</code> captura <code>Azure.RequestFailedException</code> y la traduce. <code>Web</code> nunca ve tipos de Azure.</li>
+        <li><strong>UI Blazor:</strong> <code>&lt;ErrorBoundary&gt;</code> envolviendo el chat; estado de error en <code>TutorChatState</code> para mensajes en línea.</li>
+        <li><strong>Falla global:</strong> <code>app.UseExceptionHandler("/Error")</code> y página <code>Error.razor</code> ya migradas.</li>
+        <li><strong>Observabilidad:</strong> <code>ILogger</code> con <code>TraceId</code> por sesión para correlacionar fallos (correlación de errores).</li>
+      </ul>
+    </section>
+
+    <!-- 08 -->
+    <section id="s8">
+      <h2><span class="n">08</span>Configuración</h2>
+      <p>Configuración tipada y validada con <code>IOptions&lt;TutorOptions&gt;</code> + <code>ValidateOnStart</code>: la app falla al arrancar si falta <code>AgentId</code> o <code>Endpoint</code>, en lugar de romper al primer mensaje. <code>AuthMode</code> alterna la credencial en runtime.</p>
+<pre class="code">{
+  "AiFoundry": {
+    "Endpoint": "https://&lt;foundry&gt;.services.ai.azure.com/api/projects/&lt;project&gt;",
+    "AgentId": "asst_xxxxxxxxxxxxxxxxxxxx",
+    "ModelDeployment": "gpt-4o-mini",
+    "AuthMode": "DefaultCredential",
+    "MaxRetries": 3,
+    "TimeoutSeconds": 60
+  },
+  "Logging": { "LogLevel": { "Default": "Information" } },
+  "AllowedHosts": "*"
+}</pre>
+      <h3>Gestión de secretos por entorno</h3>
+      <dl class="stack">
+        <dt>Development</dt><dd><code>ApiKey</code> vía <em>User Secrets</em> (<code>dotnet user-secrets</code>). Nunca en <code>appsettings.Development.json</code>.</dd>
+        <dt>Production</dt><dd><code>ApiKey</code> vía <em>Azure Key Vault</em> o variables de entorno. <code>AuthMode=DefaultCredential</code> + Managed Identity recomendado.</dd>
+        <dt>Switch</dt><dd><code>AuthMode</code> = <code>DefaultCredential</code> | <code>ApiKey</code>. <code>ApiKey</code> solo se lee si el modo es <code>ApiKey</code>.</dd>
+      </dl>
+      <p class="note"><span class="t">Validación al inicio</span>Con <code>services.AddOptions&lt;TutorOptions&gt;().Bind(config).ValidateDataAnnotations().ValidateOnStart()</code>, una configuración incompleta lanza <code>OptionsValidationException</code> durante <code>Program.cs</code>: detección temprana, no error silencioso en producción.</p>
+    </section>
+
+    <!-- 09 -->
+    <section id="s9">
+      <h2><span class="n">09</span>Dependencias NuGet</h2>
+      <p>Solo lo necesario por capa. El SDK de Azure se aísla en <code>Infrastructure</code>; <code>Domain</code> queda libre de paquetes.</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Proyecto</th><th>Paquete</th><th>Propósito</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Domain</strong></td><td>—</td><td><span class="pill d">sin dependencias</span> Núcleo puro.</td></tr>
+          <tr><td rowspan="4"><strong>Application</strong></td><td><code>Microsoft.Extensions.Options</code></td><td><code>IOptions&lt;TutorOptions&gt;</code> tipado.</td></tr>
+          <tr><td><code>Microsoft.Extensions.Logging.Abstractions</code></td><td>Logging sin acoplamiento a una implementación.</td></tr>
+          <tr><td><code>FluentValidation</code></td><td>Validación declarativa de <code>ChatRequestDto</code> (opcional).</td></tr>
+          <tr><td><code>MediatR</code></td><td>CQRS: el orquestador como handler (bonus académico, opcional).</td></tr>
+          <tr><td rowspan="6"><strong>Infrastructure</strong></td><td><code>Azure.AI.Agents</code></td><td>SDK oficial de agentes de Azure AI Foundry: threads, runs, streaming.</td></tr>
+          <tr><td><code>Azure.Identity</code></td><td><code>DefaultAzureCredential</code> (Managed Identity / Azure CLI).</td></tr>
+          <tr><td><code>Azure.Core</code></td><td>Tipos compartidos (<code>AzureKeyCredential</code>, <code>RequestFailedException</code>).</td></tr>
+          <tr><td><code>Microsoft.Extensions.Http.Resilience</code></td><td>Resiliencia con Polly (retry, circuit breaker, timeout).</td></tr>
+          <tr><td><code>Microsoft.Extensions.Configuration.Binder</code></td><td>Binding de <code>TutorOptions</code>.</td></tr>
+          <tr><td><code>Microsoft.EntityFrameworkCore.Sqlite</code></td><td>Persistencia (solo si se sustituye el repo en memoria).</td></tr>
+          <tr><td rowspan="2"><strong>Web</strong></td><td>framework <code>Microsoft.NET.Sdk.Web</code></td><td>ASP.NET Core 10 + Blazor (incluidos en el SDK).</td></tr>
+          <tr><td><code>—</code></td><td>No referencia Azure directamente: lo resuelve vía DI desde Infrastructure.</td></tr>
+        </tbody>
+      </table></div>
+      <h3>Tests (solución)</h3>
+      <ul>
+        <li><code>xunit</code> + <code>xunit.runner.visualstudio</code> — runner de pruebas.</li>
+        <li><code>NSubstitute</code> o <code>Moq</code> — dobles para <code>IAiFoundryAgentService</code> y el repositorio.</li>
+        <li><code>coverlet.collector</code> — cobertura de código.</li>
+        <li><code>Microsoft.Extensions.Options.DataAnnotations</code> — validar <code>TutorOptions</code> en tests.</li>
+      </ul>
+    </section>
+
+    <!-- 10 -->
+    <section id="s10">
+      <h2><span class="n">10</span>Justificación técnica</h2>
+      <p>Cada decisión, con su porqué y la alternativa descartada.</p>
+      <div class="grid2">
+        <div class="card"><span class="tag">Decisión</span><h4>Clean Architecture en 4 proyectos</h4><p><strong>Por qué:</strong> aísla reglas de negocio del SDK de Azure y de la UI; testeable sin red; cambiar de proveedor de IA toca solo Infrastructure. <strong>Alternativa:</strong> proyecto único con carpetas — más rápido pero sin separación formal, débil para un trabajo académico evaluado.</p></div>
+        <div class="card"><span class="tag">Decisión</span><h4>Azure.AI.Agents (no el SDK de Inferencia)</h4><p><strong>Por qué:</strong> el SDK de Agentes es el oficial para consumir agentes de Foundry: threads, runs y streaming de eventos. El SDK de Inferencia solo chat con modelos sueltos, sin agente. <strong>Alternativa:</strong> HTTP plano a la API de agentes — pierde tipado, reintentos y manejo de streaming.</p></div>
+        <div class="card"><span class="tag">Decisión</span><h4>Consumir agente existente por ID</h4><p><strong>Por qué:</strong> el agente ya está definido en Foundry (prompt, herramientas, modelo). El código no lo crea: lo recupera con <code>AgentId</code> y ejecuta runs. <strong>Single source of governance</strong>: el agente se actualiza en Foundry sin redeploy de la app.</p></div>
+        <div class="card"><span class="tag">Decisión</span><h4>Auth dual conmutable por config</h4><p><strong>Por qué:</strong> <code>DefaultAzureCredential</code> es best practice (sin secretos), pero el modo académico/local puede no tener Managed Identity; <code>ApiKey</code> da un escape hatch. La <code>CredentialFactory</code> decide en runtime. <strong>Alternativa:</strong> solo uno — o fricción local, o secreto en producción.</p></div>
+        <div class="card"><span class="tag">Decisión</span><h4>Blazor Interactive Server</h4><p><strong>Por qué:</strong> cumple “todo corre en el servidor”; el streaming por <code>IAsyncEnumerable</code> sobre SignalR es natural server-side y da experiencia tipo ChatGPT sin WebAssembly. <strong>Alternativa:</strong> Blazor WebAssembly — ejecución en cliente, no cumple el requisito.</p></div>
+        <div class="card"><span class="tag">Decisión</span><h4>Streaming + no-streaming</h4><p><strong>Por qué:</strong> streaming para UX en vivo; no-streaming para integraciones REST y tests deterministas. Dos métodos del mismo servicio, mismo orquestador. <strong>Alternativa:</strong> solo streaming — difícil de testear y consumir vía API.</p></div>
+        <div class="card"><span class="tag">Decisión</span><h4>DTOs en Application, mapeo en el boundary</h4><p><strong>Por qué:</strong> la UI y los tests no conocen los tipos de Azure; cambios de versión del SDK no rompen contratos. <strong>Alternativa:</strong> exponer modelos del SDK — acoplamiento total.</p></div>
+        <div class="card"><span class="tag">Decisión</span><h4>Polly / Http Resilience</h4><p><strong>Por qué:</strong> los endpoints de LLM devuelven 429 y 5xx con frecuencia; retry + circuit breaker + timeout son estándar. <strong>Alternativa:</strong> sin resiliencia — fallos en cascada ante picos.</p></div>
+        <div class="card"><span class="tag">Decisión</span><h4>IOptions + ValidateOnStart</h4><p><strong>Por qué:</strong> fail-fast: si falta <code>AgentId</code> o <code>Endpoint</code>, la app no arranca con un error claro, no falla en el primer mensaje. <strong>Alternativa:</strong> leer config con strings sueltos — errores tardíos y difíciles de rastrear.</p></div>
+        <div class="card"><span class="tag">Decisión</span><h4>Traducción de errores en la frontera</h4><p><strong>Por qué:</strong> <code>Web</code> nunca ve <code>Azure.RequestFailedException</code>; recibe <code>ErrorDto</code> con mensaje en español y <code>TraceId</code>. <strong>Alternativa:</strong> propagar excepciones del SDK — filtración de secretos y trazas al cliente.</p></div>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <span>LinkedIn Tutor AI · Documento de arquitectura — sin código, solo diseño.</span>
+      <span>Stack: ASP.NET Core 10 · Blazor Interactive Server · Azure AI Foundry</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+// active TOC link on scroll
+(function(){
+  const links=[...document.querySelectorAll('aside.toc a')];
+  if(!links.length) return;
+  const map=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
+  const sections=links.map(a=>document.getElementById(a.getAttribute('href').slice(1))).filter(Boolean);
+  const io=new IntersectionObserver((es)=>{
+    es.forEach(e=>{ if(e.isIntersecting){ links.forEach(l=>l.classList.remove('active')); const a=map.get(e.target.id); if(a)a.classList.add('active'); } });
+  },{rootMargin:'-90px 0px -70% 0px',threshold:0});
+  sections.forEach(s=>io.observe(s));
+})();
+</script>
