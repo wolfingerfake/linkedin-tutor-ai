@@ -22,7 +22,7 @@ public static class AgentExceptionMapper
                 408 or 504 => new AiFoundryTimeoutException("El agente tardó demasiado. Intenta de nuevo.", rfe),
                 429 => new AiFoundryThrottledException("Demasiadas solicitudes. Espera unos segundos.", rfe),
                 >= 500 => new AiFoundryUnavailableException("El agente no está disponible. Intenta más tarde.", rfe),
-                _ => new AiFoundryException($"Error al llamar al agente (HTTP {rfe.Status}): {rfe.Message}", rfe)
+                _ => new AiFoundryException("Error al llamar al agente. Intenta más tarde.", rfe)
             };
         }
 

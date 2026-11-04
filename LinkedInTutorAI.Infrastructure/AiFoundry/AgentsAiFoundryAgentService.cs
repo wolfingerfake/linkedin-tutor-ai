@@ -40,6 +40,10 @@ public sealed class AgentsAiFoundryAgentService : IAiFoundryAgentService
     /// <inheritdoc/>
     public async Task<FoundryResponse> AskAsync(FoundryRequest request, CancellationToken ct = default)
     {
+        var timeoutSeconds = Math.Clamp(request.TimeoutSeconds ?? _options.TimeoutSeconds, 1, 300);
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        cts.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
+
         try
         {
             var responseClient = _projectClient.ProjectOpenAIClient
@@ -47,9 +51,14 @@ public sealed class AgentsAiFoundryAgentService : IAiFoundryAgentService
 
             var response = await responseClient.CreateResponseAsync(
                 userInputText: request.UserMessage,
-                cancellationToken: ct);
+                cancellationToken: cts.Token);
 
             return AgentMessageMapper.ToFoundryResponse(response);
+        }
+        catch (OperationCanceledException) when (cts.IsCancellationRequested && !ct.IsCancellationRequested)
+        {
+            throw new AiFoundryTimeoutException(
+                $"Timeout agotado ({timeoutSeconds}s) esperando al agente.");
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
