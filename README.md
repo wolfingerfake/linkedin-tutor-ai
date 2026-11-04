@@ -2,11 +2,11 @@
 
 Tutor de IA para LinkedIn (Blazor Server)
 
-Aplicación web construida con **Blazor Server** sobre **.NET 6**.
+Aplicación web construida con **Blazor Server** sobre **.NET 10**.
 
 ## Requisitos
 
-- [.NET 6 SDK](https://dotnet.microsoft.com/download/dotnet/6.0)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - Un editor como Visual Studio, VS Code o JetBrains Rider
 
 ## Estructura
