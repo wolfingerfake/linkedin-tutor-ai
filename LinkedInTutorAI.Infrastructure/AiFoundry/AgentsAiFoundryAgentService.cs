@@ -49,13 +49,16 @@ public sealed class AgentsAiFoundryAgentService : IAiFoundryAgentService
 
         var run = (await _client.Runs.CreateRunAsync(threadId, request.AgentId)).Value;
 
-        // Polling hasta que el run termine (con cancelación entre iteraciones).
-        const int maxAttempts = 600;
-        for (var i = 0; i < maxAttempts; i++)
+        // Polling con deadline basado en el timeout configurado (no en constante mágica).
+        var timeoutSeconds = Math.Clamp(request.TimeoutSeconds ?? _options.TimeoutSeconds, 1, 300);
+        var deadline = DateTimeOffset.UtcNow.AddSeconds(timeoutSeconds);
+
+        while (run.Status == RunStatus.Queued || run.Status == RunStatus.InProgress)
         {
-            if (run.Status != RunStatus.Queued && run.Status != RunStatus.InProgress)
+            if (DateTimeOffset.UtcNow >= deadline)
             {
-                break;
+                throw new AiFoundryTimeoutException(
+                    $"Timeout agotado ({timeoutSeconds}s) esperando al agente en el thread '{threadId}'.");
             }
 
             await Task.Delay(TimeSpan.FromMilliseconds(500), ct);
@@ -113,10 +116,23 @@ public sealed class AgentsAiFoundryAgentService : IAiFoundryAgentService
             MessageRole.User,
             request.UserMessage);
 
+        // Deadline basado en el timeout configurado: el streaming no queda sin límite.
+        // Nota: una expiración del deadline se propaga como OperationCanceledException
+        // (limitación de los iteradores async: no se puede catch dentro de un bloque con yield).
+        // La conversión a AiFoundryTimeoutException se hace en el extremo no-iterador (UI).
+        var streamTimeoutSeconds = Math.Clamp(request.TimeoutSeconds ?? _options.TimeoutSeconds, 1, 300);
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeoutCts.CancelAfter(TimeSpan.FromSeconds(streamTimeoutSeconds));
+
         var stream = _client.Runs.CreateRunStreamingAsync(threadId, request.AgentId);
 
-        await foreach (var update in stream.WithCancellation(ct))
+        await foreach (var update in stream.WithCancellation(timeoutCts.Token))
         {
+            if (timeoutCts.IsCancellationRequested)
+            {
+                throw new AiFoundryTimeoutException(
+                    $"Timeout agotado ({streamTimeoutSeconds}s) en streaming del thread '{threadId}'.");
+            }
             if (update is MessageContentUpdate contentUpdate)
             {
                 yield return AgentMessageMapper.ToStreamChunk(

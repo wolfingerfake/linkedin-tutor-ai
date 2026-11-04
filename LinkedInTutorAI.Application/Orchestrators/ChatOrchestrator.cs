@@ -50,8 +50,12 @@ public sealed class ChatOrchestrator : IChatOrchestrator
         string userId,
         CancellationToken ct = default)
     {
+        EnsureUserId(userId);
+        ValidateRequest(request);
+
         var session = await ResolveSessionAsync(request, userId, ct);
         var foundryRequest = PostRequestMapper.ToFoundryRequest(request, _options, session.FoundryThreadId);
+        ValidateFoundryRequest(foundryRequest);
 
         var foundryResponse = await _agentService.AskAsync(foundryRequest, ct);
 
@@ -70,8 +74,12 @@ public sealed class ChatOrchestrator : IChatOrchestrator
         string userId,
         [EnumeratorCancellation] CancellationToken ct = default)
     {
+        EnsureUserId(userId);
+        ValidateRequest(request);
+
         var session = await ResolveSessionAsync(request, userId, ct);
         var foundryRequest = PostRequestMapper.ToFoundryRequest(request, _options, session.FoundryThreadId);
+        ValidateFoundryRequest(foundryRequest);
 
         var fullText = new StringBuilder();
         string? threadId = session.FoundryThreadId;
@@ -96,6 +104,36 @@ public sealed class ChatOrchestrator : IChatOrchestrator
         _logger.LogInformation(
             "Post (streaming) completado para sesión {SessionId} (thread {ThreadId}).",
             session.Id, threadId ?? session.FoundryThreadId);
+    }
+
+    /// <summary>
+    /// Garantiza que <paramref name="userId"/> no esté vacío: el orquestador nunca debe aceptar un
+    /// usuario sin autenticar (mitiga el bypass de autorización). El <paramref name="userId"/>
+    /// debe derivarse server-side del principal autenticado en el extremo que llama (p. ej.
+    /// <c>HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)</c>); el wiring de auth/Authorize
+    /// corresponde a la capa Web, pendiente.
+    /// </summary>
+    private static void EnsureUserId(string userId)
+        => ArgumentException.ThrowIfNullOrWhiteSpace(userId);
+
+    /// <summary>Valida el DTO de entrada y lanza <see cref="ValidationException"/> si no es válido.</summary>
+    private static void ValidateRequest(LinkedInPostRequest request)
+    {
+        var result = request.Validate();
+        if (!result.IsValid)
+        {
+            throw new ValidationException(result);
+        }
+    }
+
+    /// <summary>Valida el <see cref="FoundryRequest"/> mapeado y lanza <see cref="ValidationException"/> si no es válido.</summary>
+    private static void ValidateFoundryRequest(FoundryRequest request)
+    {
+        var result = request.Validate();
+        if (!result.IsValid)
+        {
+            throw new ValidationException(result);
+        }
     }
 
     /// <summary>
