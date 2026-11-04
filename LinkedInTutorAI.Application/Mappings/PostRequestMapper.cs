@@ -52,12 +52,24 @@ public static class PostRequestMapper
             ["goal"] = request.Goal.ToString(),
             ["tone"] = request.Tone.ToString(),
             ["language"] = request.Language,
-            ["maxLength"] = request.MaxLength.ToString()
+            ["maxLength"] = request.MaxLength.ToString(),
+            ["incluirHashtags"] = request.IncluirHashtags.ToString(),
+            ["incluirPreguntaFinal"] = request.IncluirPreguntaFinal.ToString()
         };
 
         if (!string.IsNullOrWhiteSpace(request.TargetAudience))
         {
             metadata["targetAudience"] = request.TargetAudience;
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Rol))
+        {
+            metadata["rol"] = request.Rol;
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.TipoPublicacion))
+        {
+            metadata["tipoPublicacion"] = request.TipoPublicacion;
         }
 
         return new FoundryRequest
@@ -86,6 +98,16 @@ public static class PostRequestMapper
         sb.AppendLine($"- Idioma de salida: {request.Language}");
         sb.AppendLine($"- Longitud máxima: {request.MaxLength} caracteres (límite de LinkedIn: 3000)");
 
+        if (!string.IsNullOrWhiteSpace(request.Rol))
+        {
+            sb.AppendLine($"- Rol/persona del autor: {request.Rol}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.TipoPublicacion))
+        {
+            sb.AppendLine($"- Tipo de publicación: {request.TipoPublicacion}");
+        }
+
         if (!string.IsNullOrWhiteSpace(request.TargetAudience))
         {
             sb.AppendLine($"- Audiencia objetivo: {request.TargetAudience}");
@@ -96,9 +118,18 @@ public static class PostRequestMapper
         sb.AppendLine(request.PostDraft);
         sb.AppendLine();
         sb.AppendLine("Requisitos de salida:");
-        sb.AppendLine("- Devuelve únicamente el texto del post, sin explicaciones ni comentarios.");
-        sb.AppendLine("- Usa saltos de línea y estructura propias de LinkedIn (hook, desarrollo, CTA).");
+        sb.AppendLine("- Devuelve ÚNICAMENTE un JSON válido, sin markdown, sin fences ni texto fuera del objeto.");
+        sb.AppendLine("- Dentro de \"publicacion\" usa saltos de línea y estructura propias de LinkedIn (hook, desarrollo, CTA).");
         sb.AppendLine("- No superes la longitud máxima indicada.");
+        sb.AppendLine(request.IncluirHashtags
+            ? "- Incluye 3-6 hashtags relevantes en el array \"hashtags\"."
+            : "- No incluyas hashtags.");
+        sb.AppendLine(request.IncluirPreguntaFinal
+            ? "- Termina la \"publicacion\" con una pregunta final que invite a comentar."
+            : "- No incluyas pregunta final.");
+        sb.AppendLine();
+        sb.AppendLine("Formato de salida exacto (sin texto fuera del objeto):");
+        sb.AppendLine("{ \"titulo\": \"...\", \"publicacion\": \"...\", \"hashtags\": [\"...\"], \"recomendaciones\": [\"...\"] }");
 
         return sb.ToString();
     }

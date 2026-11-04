@@ -65,7 +65,12 @@ public sealed class ChatOrchestrator : IChatOrchestrator
             "Post generado para sesión {SessionId} (thread {ThreadId}).",
             session.Id, foundryResponse.ThreadId ?? session.FoundryThreadId);
 
-        return ToPostResponse(foundryResponse, session.Id);
+        return PostResponseParser.Parse(foundryResponse.AssistantMessage, session.Id) with
+        {
+            FinishReason = foundryResponse.FinishReason,
+            InputTokens = foundryResponse.InputTokens,
+            OutputTokens = foundryResponse.OutputTokens
+        };
     }
 
     /// <inheritdoc/>
@@ -183,17 +188,6 @@ public sealed class ChatOrchestrator : IChatOrchestrator
             await _sessionRepository.SaveAsync(session with { FoundryThreadId = threadId }, ct);
         }
     }
-
-    /// <summary>Mapa la <see cref="FoundryResponse"/> a <see cref="LinkedInPostResponse"/>.</summary>
-    private static LinkedInPostResponse ToPostResponse(FoundryResponse response, Guid sessionId) => new()
-    {
-        SessionId = sessionId,
-        GeneratedPost = response.AssistantMessage,
-        FinishReason = response.FinishReason,
-        InputTokens = response.InputTokens,
-        OutputTokens = response.OutputTokens,
-        GeneratedAt = response.CreatedAt
-    };
 
     /// <summary>Recorta un borrador a un título de sesión legible (máx. 60 caracteres).</summary>
     private static string TruncateTitle(string draft) =>

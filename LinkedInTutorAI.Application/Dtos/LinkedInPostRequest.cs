@@ -27,6 +27,20 @@ public sealed record LinkedInPostRequest
     [StringLength(300, ErrorMessage = "La audiencia no puede superar 300 caracteres.")]
     public string? TargetAudience { get; init; }
 
+    /// <summary>Rol o persona desde la que escribe el autor (opcional, p. ej. "reclutador", "líder técnico").</summary>
+    [StringLength(120, ErrorMessage = "El rol no puede superar 120 caracteres.")]
+    public string? Rol { get; init; }
+
+    /// <summary>Tipo de publicación (opcional, p. ej. "anuncio", "historia", "consejo", "pregunta").</summary>
+    [StringLength(80, ErrorMessage = "El tipo de publicación no puede superar 80 caracteres.")]
+    public string? TipoPublicacion { get; init; }
+
+    /// <summary>Si es <see langword="true"/>, se pide al agente que incluya hashtags sugeridos.</summary>
+    public bool IncluirHashtags { get; init; } = true;
+
+    /// <summary>Si es <see langword="true"/>, se pide al agente que incluya una pregunta final (CTA conversacional).</summary>
+    public bool IncluirPreguntaFinal { get; init; } = true;
+
     /// <summary>Longitud máxima del post generado. LinkedIn limita a 3000 caracteres.</summary>
     [Range(1, 3000, ErrorMessage = "MaxLength debe estar entre 1 y 3000 caracteres.")]
     public int MaxLength { get; init; } = 3000;

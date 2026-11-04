@@ -11,6 +11,9 @@ public sealed record LinkedInPostResponse
     /// <summary>Identificador de la sesión a la que pertenece el post generado.</summary>
     public required Guid SessionId { get; init; }
 
+    /// <summary>Título sugerido para el post (encabezado, gancho).</summary>
+    public string? Title { get; init; }
+
     /// <summary>Texto del post generado.</summary>
     public required string GeneratedPost { get; init; }
 

@@ -1,0 +1,131 @@
+@page "/generador"
+@using LinkedInTutorAI.Application.Abstractions
+@using LinkedInTutorAI.Application.Dtos
+@using LinkedInTutorAI.Domain.Enums
+@using Microsoft.AspNetCore.Components
+
+<PageTitle>Generador · LinkedIn Tutor AI</PageTitle>
+
+<div class="lig-hero">
+    <h1>Generador de publicaciones</h1>
+    <p class="lig-sub">Convierte tu idea en un post de LinkedIn listo para publicar, guiado por el agente de IA de Azure AI Foundry.</p>
+</div>
+
+<div class="lig-card">
+    <EditForm Model="Model" OnValidSubmit="GenerateAsync">
+        <DataAnnotationsValidator />
+
+        <div class="row g-3">
+            <div class="col-md-8">
+                <label for="tema" class="form-label fw-semibold">Tema <span class="lig-req">*</span></label>
+                <InputText id="tema" class="form-control form-control-lg" @bind-Value="Model.Tema" placeholder="p. ej. Cómo mentorar a juniors sin micromanager" />
+                <ValidationMessage For="@(() => Model.Tema)" class="text-danger small" />
+            </div>
+            <div class="col-md-4">
+                <label for="rol" class="form-label fw-semibold">Rol</label>
+                <InputText id="rol" class="form-control" @bind-Value="Model.Rol" placeholder="p. ej. Tech Lead" />
+            </div>
+
+            <div class="col-md-6">
+                <label for="audiencia" class="form-label fw-semibold">Audiencia</label>
+                <InputText id="audiencia" class="form-control" @bind-Value="Model.Audiencia" placeholder="p. ej. reclutadores tech" />
+            </div>
+            <div class="col-md-6">
+                <label for="tipo" class="form-label fw-semibold">Tipo de publicación</label>
+                <InputText id="tipo" class="form-control" @bind-Value="Model.TipoPublicacion" placeholder="Historia, consejo, anuncio…" />
+            </div>
+
+            <div class="col-md-4">
+                <label for="tono" class="form-label fw-semibold">Tono</label>
+                <InputSelect id="tono" class="form-select" @bind-Value="Model.Tono">
+                    <option value="@PostTone.Professional">Profesional</option>
+                    <option value="@PostTone.Friendly">Cercano</option>
+                    <option value="@PostTone.Inspirational">Inspirador</option>
+                    <option value="@PostTone.Direct">Directo</option>
+                    <option value="@PostTone.Storytelling">Narrativo</option>
+                </InputSelect>
+            </div>
+            <div class="col-md-4">
+                <label for="longitud" class="form-label fw-semibold">Longitud (caracteres)</label>
+                <InputNumber id="longitud" class="form-control" @bind-Value="Model.Longitud" min="50" max="3000" step="50" />
+            </div>
+
+            <div class="col-md-6 d-flex align-items-center">
+                <div class="form-check">
+                    <InputCheckbox id="hashtags" class="form-check-input" @bind-Value="Model.IncluirHashtags" />
+                    <label for="hashtags" class="form-check-label">Incluir hashtags</label>
+                </div>
+            </div>
+            <div class="col-md-6 d-flex align-items-center">
+                <div class="form-check">
+                    <InputCheckbox id="pregunta" class="form-check-input" @bind-Value="Model.IncluirPreguntaFinal" />
+                    <label for="pregunta" class="form-check-label">Incluir pregunta final</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="lig-actions">
+            <button type="submit" class="btn btn-primary btn-lg" disabled="@IsGenerating">
+                @if (IsGenerating)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    <span>Generando…</span>
+                }
+                else
+                {
+                    <span>Generar publicación</span>
+                }
+            </button>
+            @if (IsGenerating)
+            {
+                <span class="lig-gen-note">El agente está redactando tu post…</span>
+            }
+        </div>
+    </EditForm>
+
+    @if (ErrorMessage is not null)
+    {
+        <div class="alert alert-danger lig-alert" role="alert">
+            <strong>No se pudo generar.</strong> @ErrorMessage
+        </div>
+    }
+
+    @if (Result is not null)
+    {
+        <section class="lig-result">
+            <div class="lig-result-head">
+                <h2 class="lig-result-title">@TitleDisplay</h2>
+            </div>
+
+            <article class="lig-post">@Result.GeneratedPost</article>
+
+            @if (Result.Hashtags.Count > 0)
+            {
+                <div class="lig-tags">
+                    @foreach (var t in Result.Hashtags)
+                    {
+                        <span class="badge rounded-pill bg-primary">@t</span>
+                    }
+                </div>
+            }
+
+            @if (Result.Suggestions.Count > 0)
+            {
+                <h3 class="lig-recos-title">Recomendaciones</h3>
+                <ul class="lig-recos">
+                    @foreach (var s in Result.Suggestions)
+                    {
+                        <li>@s</li>
+                    }
+                </ul>
+            }
+
+            <div class="lig-meta">
+                <button type="button" class="btn btn-outline-secondary btn-sm" @onclick="CopyAsync" disabled="@copied">
+                    @if (copied) { <span>Copiado ✓</span> } else { <span>Copiar publicación</span> }
+                </button>
+                <span class="lig-meta-note">Generado el @Result.GeneratedAt.LocalDateTime.ToString("g")</span>
+            </div>
+        </section>
+    }
+</div>

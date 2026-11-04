@@ -1,0 +1,122 @@
+/* LinkedInGenerator — estilos aislados (Blazor scope). Bootstrap 5 base, paleta propia. */
+
+:root {
+    --lig-primary: #0a66c2;
+    --lig-primary-dark: #084d8c;
+    --lig-ink: #1c2530;
+    --lig-muted: #56687f;
+    --lig-surface: #ffffff;
+    --lig-surface-2: #f4f7fb;
+    --lig-border: #dce3ee;
+    --lig-radius: 14px;
+    --lig-shadow: 0 1px 2px rgba(10, 102, 194, .06), 0 8px 24px rgba(10, 102, 194, .08);
+}
+
+.lig-hero {
+    background: linear-gradient(135deg, #0a66c2 0%, #084d8c 60%, #0b3a91 100%);
+    color: #fff;
+    border-radius: var(--lig-radius);
+    padding: 2.6rem 2.2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--lig-shadow);
+}
+.lig-hero h1 {
+    margin: 0 0 .35rem;
+    font-weight: 700;
+    font-size: 1.9rem;
+    letter-spacing: -.01em;
+}
+.lig-sub { margin: 0; color: rgba(255, 255, 255, .82); max-width: 60ch; }
+
+.lig-card {
+    background: var(--lig-surface);
+    border: 1px solid var(--lig-border);
+    border-radius: var(--lig-radius);
+    padding: 1.8rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--lig-shadow);
+}
+
+.lig-form .form-label { margin-bottom: .35rem; color: var(--lig-ink); }
+.lig-form .form-control:focus,
+.lig-form .form-select:focus {
+    border-color: var(--lig-primary);
+    box-shadow: 0 0 0 .2rem rgba(10, 102, 194, .25);
+}
+.lig-req { color: #c0392b; font-weight: 700; }
+
+.lig-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.6rem;
+    flex-wrap: wrap;
+}
+.lig-actions .btn-primary {
+    background: var(--lig-primary);
+    border-color: var(--lig-primary);
+    min-width: 220px;
+    font-weight: 600;
+}
+.lig-actions .btn-primary:hover:not(:disabled) {
+    background: var(--lig-primary-dark);
+    border-color: var(--lig-primary-dark);
+}
+.lig-gen-note { color: var(--lig-muted); font-size: .9rem; }
+
+.lig-alert { margin-top: 1.2rem; border-radius: 10px; }
+
+.lig-result {
+    background: var(--lig-surface);
+    border: 1px solid var(--lig-border);
+    border-radius: var(--lig-radius);
+    padding: 1.8rem;
+    box-shadow: var(--lig-shadow);
+    animation: lig-rise .25s ease-out;
+}
+.lig-result-head {
+    display: flex;
+    align-items: baseline;
+    gap: .6rem;
+    border-bottom: 1px solid var(--lig-border);
+    padding-bottom: .8rem;
+    margin-bottom: 1.1rem;
+}
+.lig-result-title { margin: 0; font-weight: 700; color: var(--lig-ink); font-size: 1.35rem; }
+.lig-post {
+    font-size: 1.06rem;
+    line-height: 1.7;
+    color: var(--lig-ink);
+    white-space: pre-wrap;
+    background: var(--lig-surface-2);
+    border-left: 4px solid var(--lig-primary);
+    border-radius: 0 10px 10px 0;
+    padding: 1.1rem 1.3rem;
+}
+.lig-tags { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1.1rem 0 0; }
+.lig-tags .badge { font-weight: 600; padding: .45rem .75rem; }
+
+.lig-recos-title { margin: 1.4rem 0 .6rem; font-size: 1.05rem; color: var(--lig-ink); }
+.lig-recos { margin: 0; padding-left: 1.2rem; color: var(--lig-muted); }
+.lig-recos li { margin-bottom: .4rem; line-height: 1.55; }
+
+.lig-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1.4rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--lig-border);
+}
+.lig-meta-note { color: var(--lig-muted); font-size: .82rem; }
+
+@keyframes lig-rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .lig-result { animation: none; }
+}
