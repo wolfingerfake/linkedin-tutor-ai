@@ -5,6 +5,7 @@ using LinkedInTutorAI.Application.Options;
 using LinkedInTutorAI.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.ClientModel.Primitives;
 
 namespace LinkedInTutorAI.Infrastructure.AiFoundry;
 
@@ -56,8 +57,10 @@ public sealed class AiFoundryCredentialFactory
     private AIProjectClient CreateWithKey(Uri endpoint, string apiKey)
     {
         _logger.LogInformation(
-            "Creando AIProjectClient con ApiKeyBearerCredential (Bearer) para {Endpoint}.",
+            "Creando AIProjectClient con cabecera api-key para {Endpoint}.",
             endpoint);
-        return new AIProjectClient(endpoint, new ApiKeyBearerCredential(apiKey));
+        var options = new AIProjectClientOptions();
+        options.AddPolicy(new ApiKeyHeaderPolicy(apiKey), PipelinePosition.PerCall);
+        return new AIProjectClient(endpoint, new NoOpCredential(), options);
     }
 }
