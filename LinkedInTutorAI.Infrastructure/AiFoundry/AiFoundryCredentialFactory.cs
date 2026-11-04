@@ -1,3 +1,4 @@
+using Azure;
 using Azure.AI.Agents.Persistent;
 using Azure.Core;
 using Azure.Identity;
@@ -61,8 +62,10 @@ public sealed class AiFoundryCredentialFactory
     private PersistentAgentsClient CreateWithKey(string endpoint, string apiKey)
     {
         _logger.LogInformation(
-            "Creando PersistentAgentsClient con ApiKeyBearerCredential para {Endpoint}.",
+            "Creando PersistentAgentsClient con autenticación por api-key (header api-key) para {Endpoint}.",
             endpoint);
-        return new PersistentAgentsClient(endpoint, new ApiKeyBearerCredential(apiKey));
+        var options = new PersistentAgentsAdministrationClientOptions();
+        options.AddPolicy(new ApiKeyHeaderPolicy(apiKey), HttpPipelinePosition.PerCall);
+        return new PersistentAgentsClient(endpoint, new NoOpCredential(), options);
     }
 }
