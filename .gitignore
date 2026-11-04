@@ -47,6 +47,7 @@ PublishScripts/
 *.log
 
 ## Secrets / local settings
+appsettings.json
 appsettings.Development.json
 appsettings.*.Local.json
 secrets.json
