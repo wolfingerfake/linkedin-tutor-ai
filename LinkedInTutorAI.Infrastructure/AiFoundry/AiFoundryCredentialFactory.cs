@@ -1,5 +1,4 @@
-using Azure;
-using Azure.AI.Agents.Persistent;
+using Azure.AI.Projects;
 using Azure.Core;
 using Azure.Identity;
 using LinkedInTutorAI.Application.Options;
@@ -10,9 +9,9 @@ using Microsoft.Extensions.Options;
 namespace LinkedInTutorAI.Infrastructure.AiFoundry;
 
 /// <summary>
-/// Fábrica que construye un <see cref="PersistentAgentsClient"/> eligiendo la credencial
-/// según <see cref="FoundryOptions.AuthMode"/>. Único punto de la aplicación que decide
-/// cómo autenticarse contra Azure AI Foundry (dual: DefaultAzureCredential o ApiKeyBearerCredential).
+/// Fábrica que construye un <see cref="AIProjectClient"/> eligiendo la credencial
+/// según <see cref="FoundryOptions.AuthMode"/>. Único punto que decide cómo autenticarse
+/// contra Azure AI Foundry (dual: DefaultAzureCredential o cabecera api-key).
 /// </summary>
 public sealed class AiFoundryCredentialFactory
 {
@@ -20,8 +19,6 @@ public sealed class AiFoundryCredentialFactory
     private readonly ILogger<AiFoundryCredentialFactory> _logger;
 
     /// <summary>Crea la fábrica con las opciones inyectadas.</summary>
-    /// <param name="options">Opciones de Azure AI Foundry.</param>
-    /// <param name="logger">Logger.</param>
     public AiFoundryCredentialFactory(IOptions<FoundryOptions> options, ILogger<AiFoundryCredentialFactory> logger)
     {
         _options = options.Value;
@@ -29,43 +26,38 @@ public sealed class AiFoundryCredentialFactory
     }
 
     /// <summary>
-    /// Construye un <see cref="PersistentAgentsClient"/> para el endpoint configurado,
-    /// usando <see cref="DefaultAzureCredential"/> (Entra) o <see cref="ApiKeyBearerCredential"/>
-    /// (clave de API como Bearer) según <see cref="FoundryOptions.AuthMode"/>.
+    /// Construye un <see cref="AIProjectClient"/> para el endpoint configurado,
+    /// usando <see cref="DefaultAzureCredential"/> (Entra) o la cabecera <c>api-key</c>
+    /// (clave de API) según <see cref="FoundryOptions.AuthMode"/>.
     /// </summary>
-    /// <returns>Cliente del agente de Azure AI Foundry.</returns>
-    /// <exception cref="InvalidOperationException">
-    /// Se lanza si <see cref="FoundryOptions.AuthMode"/> es <see cref="AuthMode.ApiKey"/>
-    /// y <see cref="FoundryOptions.ApiKey"/> falta.
-    /// </exception>
-    public PersistentAgentsClient CreateAgentsClient()
+    public AIProjectClient CreateProjectClient()
     {
+        var endpoint = new Uri(_options.Endpoint);
+
         return _options.AuthMode switch
         {
             AuthMode.ApiKey when string.IsNullOrWhiteSpace(_options.ApiKey)
                 => throw new InvalidOperationException(
                     "AuthMode = ApiKey pero ApiKey no está configurado. Guárdalo en User Secrets o Key Vault."),
             AuthMode.ApiKey
-                => CreateWithKey(_options.Endpoint, _options.ApiKey!),
-            _ => CreateWithDefaultCredential(_options.Endpoint)
+                => CreateWithKey(endpoint, _options.ApiKey!),
+            _ => CreateWithDefaultCredential(endpoint)
         };
     }
 
-    private PersistentAgentsClient CreateWithDefaultCredential(string endpoint)
+    private AIProjectClient CreateWithDefaultCredential(Uri endpoint)
     {
         _logger.LogInformation(
-            "Creando PersistentAgentsClient con DefaultAzureCredential para {Endpoint}.",
+            "Creando AIProjectClient con DefaultAzureCredential para {Endpoint}.",
             endpoint);
-        return new PersistentAgentsClient(endpoint, new DefaultAzureCredential());
+        return new AIProjectClient(endpoint, new DefaultAzureCredential());
     }
 
-    private PersistentAgentsClient CreateWithKey(string endpoint, string apiKey)
+    private AIProjectClient CreateWithKey(Uri endpoint, string apiKey)
     {
         _logger.LogInformation(
-            "Creando PersistentAgentsClient con autenticación por api-key (header api-key) para {Endpoint}.",
+            "Creando AIProjectClient con ApiKeyBearerCredential (Bearer) para {Endpoint}.",
             endpoint);
-        var options = new PersistentAgentsAdministrationClientOptions();
-        options.AddPolicy(new ApiKeyHeaderPolicy(apiKey), HttpPipelinePosition.PerCall);
-        return new PersistentAgentsClient(endpoint, new NoOpCredential(), options);
+        return new AIProjectClient(endpoint, new ApiKeyBearerCredential(apiKey));
     }
 }

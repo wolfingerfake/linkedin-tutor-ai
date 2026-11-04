@@ -16,36 +16,26 @@ public static class PostRequestMapper
 {
     /// <summary>
     /// Mapa un <see cref="LinkedInPostRequest"/> a <see cref="FoundryRequest"/> usando el
-    /// <see cref="FoundryOptions.AgentId"/> de la configuración.
+    /// <see cref="FoundryOptions.AgentName"/> de la configuración.
     /// </summary>
     /// <param name="request">Solicitud de entrada del usuario.</param>
-    /// <param name="options">Opciones de Azure AI Foundry (proporciona <see cref="FoundryOptions.AgentId"/>).</param>
-    /// <param name="threadId">
-    /// Identificador del thread de Foundry para continuar la conversación;
-    /// <see langword="null"/> para iniciar un thread nuevo.
-    /// </param>
+    /// <param name="options">Opciones de Azure AI Foundry (proporciona <see cref="FoundryOptions.AgentName"/>).</param>
     /// <returns>El <see cref="FoundryRequest"/> listo para enviar al agente.</returns>
     public static FoundryRequest ToFoundryRequest(
         LinkedInPostRequest request,
-        FoundryOptions options,
-        string? threadId = null)
-        => ToFoundryRequest(request, options.AgentId, threadId);
+        FoundryOptions options)
+        => ToFoundryRequest(request, options.AgentName);
 
     /// <summary>
     /// Mapa un <see cref="LinkedInPostRequest"/> a <see cref="FoundryRequest"/> usando un
-    /// <paramref name="agentId"/> explícito. Útil para pruebas que no requieren <see cref="FoundryOptions"/>.
+    /// <paramref name="agentName"/> explícito. Útil para pruebas que no requieren <see cref="FoundryOptions"/>.
     /// </summary>
     /// <param name="request">Solicitud de entrada del usuario.</param>
-    /// <param name="agentId">Identificador del agente existente en Azure AI Foundry.</param>
-    /// <param name="threadId">
-    /// Identificador del thread de Foundry para continuar la conversación;
-    /// <see langword="null"/> para iniciar un thread nuevo.
-    /// </param>
+    /// <param name="agentName">Nombre del agente existente en Azure AI Foundry.</param>
     /// <returns>El <see cref="FoundryRequest"/> listo para enviar al agente.</returns>
     public static FoundryRequest ToFoundryRequest(
         LinkedInPostRequest request,
-        string agentId,
-        string? threadId = null)
+        string agentName)
     {
         var metadata = new Dictionary<string, string>
         {
@@ -74,10 +64,8 @@ public static class PostRequestMapper
 
         return new FoundryRequest
         {
-            AgentId = agentId,
-            ThreadId = threadId,
+            AgentName = agentName,
             UserMessage = BuildPrompt(request),
-            Role = FoundryMessageRole.User,
             Metadata = metadata
         };
     }

@@ -54,7 +54,7 @@ public sealed class ChatOrchestrator : IChatOrchestrator
         ValidateRequest(request);
 
         var session = await ResolveSessionAsync(request, userId, ct);
-        var foundryRequest = PostRequestMapper.ToFoundryRequest(request, _options, session.FoundryThreadId);
+        var foundryRequest = PostRequestMapper.ToFoundryRequest(request, _options);
         ValidateFoundryRequest(foundryRequest);
 
         var foundryResponse = await _agentService.AskAsync(foundryRequest, ct);
@@ -83,7 +83,7 @@ public sealed class ChatOrchestrator : IChatOrchestrator
         ValidateRequest(request);
 
         var session = await ResolveSessionAsync(request, userId, ct);
-        var foundryRequest = PostRequestMapper.ToFoundryRequest(request, _options, session.FoundryThreadId);
+        var foundryRequest = PostRequestMapper.ToFoundryRequest(request, _options);
         ValidateFoundryRequest(foundryRequest);
 
         var fullText = new StringBuilder();

@@ -41,7 +41,7 @@ Los ajustes de la aplicación viven en `appsettings.json`. Usa
 
 La sección `AiFoundry` se bindea a `FoundryOptions` (tipada y validada con
 `IOptions<FoundryOptions>` + `ValidateOnStart`: fail-fast al arrancar si
-`Endpoint`, `AgentId` o `ModelDeployment` faltan). El registro se hace en
+`Endpoint` o `AgentName` faltan). El registro se hace en
 `Program.cs` con una sola línea:
 
 ```csharp
@@ -58,8 +58,7 @@ Sustituye los valores por los de tu proyecto de Foundry.
 | Clave | ¿Requerido? | Descripción |
 |---|---|---|
 | `Endpoint` | sí | URL del proyecto de Foundry |
-| `AgentId` | sí | ID del agente existente en Foundry |
-| `ModelDeployment` | sí | Nombre del despliegue del modelo |
+| `AgentName` | sí | Nombre del agente existente en Foundry |
 | `AuthMode` | no | `DefaultCredential` (Entra) o `ApiKey` |
 | `ApiKey` | solo si `AuthMode=ApiKey` | Clave de API — **secreto** |
 | `MaxRetries` | no | Reintentos ante 429/5xx (default 3) |
@@ -82,8 +81,7 @@ Sustituye los valores por los de tu proyecto de Foundry.
   | Variable de entorno | Clave de config |
   |---|---|
   | `AiFoundry__Endpoint` | `AiFoundry:Endpoint` |
-  | `AiFoundry__AgentId` | `AiFoundry:AgentId` |
-  | `AiFoundry__ModelDeployment` | `AiFoundry:ModelDeployment` |
+  | `AiFoundry__AgentName` | `AiFoundry:AgentName` |
   | `AiFoundry__AuthMode` | `AiFoundry:AuthMode` (`DefaultCredential` \| `ApiKey`) |
   | `AiFoundry__ApiKey` | `AiFoundry:ApiKey` — **secreto**: env var o Key Vault, nunca en git |
   | `AiFoundry__MaxRetries` | `AiFoundry:MaxRetries` |
@@ -92,8 +90,7 @@ Sustituye los valores por los de tu proyecto de Foundry.
   Ejemplo (Bash):
   ```bash
   export AiFoundry__Endpoint="https://MIFOUNDRY.services.ai.azure.com/api/projects/MIPROYECTO"
-  export AiFoundry__AgentId="asst_MIAGENTE"
-  export AiFoundry__ModelDeployment="gpt-4o-mini"
+  export AiFoundry__AgentName="MIAGENTE"
   export AiFoundry__AuthMode="DefaultCredential"
   ```
 

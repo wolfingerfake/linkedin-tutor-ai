@@ -4,10 +4,11 @@ namespace LinkedInTutorAI.Application.Abstractions;
 
 /// <summary>
 /// Contrato del servicio que dialoga con el agente de Azure AI Foundry.
-/// Declarado en <c>Application</c> e implementado en <c>Infrastructure</c> con el SDK
-/// <c>Azure.AI.Agents</c>, de modo que la capa de aplicación no acopla a los tipos de Azure.
-/// El agente ya existe en Foundry; este servicio solo recupera el thread, añade el mensaje
-/// y ejecuta el <c>run</c> por <see cref="FoundryRequest.AgentId"/>.
+/// Declarado en <c>Application</c> e implementado en <c>Infrastructure</c> con la implementación
+/// oficial <c>Azure.AI.Projects</c> + <c>Azure.AI.Extensions.OpenAI</c> (Responses API),
+/// de modo que la capa de aplicación no acopla a los tipos de Azure.
+/// El agente ya existe en Foundry; este servicio obtiene el cliente de respuestas
+/// para el agente y llama a <c>CreateResponse</c> con <see cref="FoundryRequest.UserMessage"/>.
 /// </summary>
 public interface IAiFoundryAgentService
 {

@@ -1,63 +1,37 @@
-using System.Text;
-using Azure.AI.Agents.Persistent;
+using Azure.AI.Extensions.OpenAI;
 using LinkedInTutorAI.Application.Dtos;
 using LinkedInTutorAI.Domain.Enums;
+using OpenAI.Responses;
 
 namespace LinkedInTutorAI.Infrastructure.AiFoundry;
 
 /// <summary>
-/// Mapper que traduce los tipos del SDK <c>Azure.AI.Agents.Persistent</c>
-/// (<see cref="PersistentThreadMessage"/>, <see cref="ThreadRun"/>, <see cref="RunStatus"/>,
-/// <see cref="StreamingUpdate"/>) a los DTOs de aplicación (<see cref="FoundryResponse"/>,
-/// <see cref="ChatStreamChunk"/>). Aísla a la capa de aplicación de la forma del SDK.
+/// Mapper que traduce los tipos de la implementación oficial
+/// <c>Azure.AI.Extensions.OpenAI</c> (<see cref="ResponseResult"/>) a los DTOs de
+/// aplicación (<see cref="FoundryResponse"/>, <see cref="ChatStreamChunk"/>).
+/// Aísla a la capa de aplicación de la forma del SDK.
 /// </summary>
 public static class AgentMessageMapper
 {
     /// <summary>
-    /// Extrae el texto plano de un <see cref="PersistentThreadMessage"/> recorriendo sus
-    /// <see cref="PersistentThreadMessage.ContentItems"/> y concatenando los
-    /// <see cref="MessageTextContent"/>.
+    /// Mapa un <see cref="ResponseResult"/> a <see cref="FoundryResponse"/>.
     /// </summary>
-    /// <param name="message">Mensaje devuelto por el agente.</param>
-    /// <returns>Texto plano del mensaje.</returns>
-    public static string ExtractText(PersistentThreadMessage message)
-    {
-        var sb = new StringBuilder();
-        foreach (var content in message.ContentItems)
-        {
-            if (content is MessageTextContent textContent)
-            {
-                sb.Append(textContent.Text);
-            }
-        }
-        return sb.ToString();
-    }
-
-    /// <summary>
-    /// Mapa un <see cref="PersistentThreadMessage"/> y el estado de su run a un
-    /// <see cref="FoundryResponse"/>.
-    /// </summary>
-    /// <param name="message">Mensaje del asistente.</param>
-    /// <param name="threadId">Identificador del thread (para continuar la conversación).</param>
-    /// <param name="status">Estado final del run.</param>
+    /// <param name="response">Respuesta del agente (Responses API).</param>
+    /// <param name="threadId">Identificador de conversación opcional (la Responses API es stateless).</param>
     /// <returns>El <see cref="FoundryResponse"/> para la capa de aplicación.</returns>
-    public static FoundryResponse ToFoundryResponse(
-        PersistentThreadMessage message,
-        string? threadId,
-        RunStatus status) => new()
+    public static FoundryResponse ToFoundryResponse(ResponseResult response, string? threadId = null) => new()
     {
         ThreadId = threadId,
-        AssistantMessage = ExtractText(message),
-        MessageId = message.Id,
-        FinishReason = ToFinishReason(status),
-        CreatedAt = message.CreatedAt
+        AssistantMessage = response.GetOutputText() ?? string.Empty,
+        FinishReason = FinishReason.Stop,
+        CreatedAt = DateTimeOffset.UtcNow
     };
 
     /// <summary>
-    /// Construye un <see cref="ChatStreamChunk"/> de control/delta para el modo streaming.
+    /// Construye un <see cref="ChatStreamChunk"/> de delta/control para el modo streaming.
     /// </summary>
     /// <param name="delta">Delta de texto (puede ser vacío en chunks de control).</param>
-    /// <param name="threadId">Identificador del thread.</param>
+    /// <param name="threadId">Identificador de conversación opcional.</param>
     /// <param name="isFinal"><see langword="true"/> si es el último chunk.</param>
     /// <param name="reason">Motivo de finalización.</param>
     public static ChatStreamChunk ToStreamChunk(
@@ -71,20 +45,4 @@ public static class AgentMessageMapper
         IsFinal = isFinal,
         FinishReason = reason
     };
-
-    /// <summary>Traduce <see cref="RunStatus"/> del SDK a <see cref="FinishReason"/> de dominio.</summary>
-    public static FinishReason ToFinishReason(RunStatus status)
-    {
-        if (status == RunStatus.Completed)
-        {
-            return FinishReason.Stop;
-        }
-
-        if (status == RunStatus.Cancelled)
-        {
-            return FinishReason.Cancelled;
-        }
-
-        return FinishReason.Error;
-    }
 }

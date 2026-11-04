@@ -6,7 +6,8 @@ using ValidationResult = LinkedInTutorAI.Application.Validation.ValidationResult
 namespace LinkedInTutorAI.Application.Options;
 
 /// <summary>
-/// Opciones tipadas y validadas para la conexión con Azure AI Foundry.
+/// Opciones tipadas y validadas para la conexión con Azure AI Foundry
+/// (implementación oficial vía <c>Azure.AI.Projects</c> + <c>Azure.AI.Extensions.OpenAI</c>).
 /// Se enlazan desde la sección <c>AiFoundry</c> de <c>appsettings.json</c> mediante
 /// <c>IOptions&lt;FoundryOptions&gt;</c> y <c>ValidateOnStart</c> (fail-fast).
 /// </summary>
@@ -23,13 +24,9 @@ public sealed record FoundryOptions
     [Url(ErrorMessage = "El Endpoint debe ser una URL absoluta válida.")]
     public required string Endpoint { get; init; }
 
-    /// <summary>Identificador del agente existente en Azure AI Foundry.</summary>
-    [Required(ErrorMessage = "El AgentId es obligatorio.")]
-    public required string AgentId { get; init; }
-
-    /// <summary>Nombre del despliegue del modelo que usa el agente (p. ej. <c>gpt-4o-mini</c>).</summary>
-    [Required(ErrorMessage = "El ModelDeployment es obligatorio.")]
-    public required string ModelDeployment { get; init; }
+    /// <summary>Nombre del agente existente en Azure AI Foundry (tal como lo genera Foundry).</summary>
+    [Required(ErrorMessage = "El AgentName es obligatorio.")]
+    public required string AgentName { get; init; }
 
     /// <summary>Modo de autenticación contra el servicio. Por defecto, <see cref="AuthMode.DefaultCredential"/>.</summary>
     public AuthMode AuthMode { get; init; } = AuthMode.DefaultCredential;
@@ -40,7 +37,7 @@ public sealed record FoundryOptions
     /// </summary>
     public string? ApiKey { get; init; }
 
-    /// <summary>Número máximo de reintentos ante 429/5xx (resiliencia con Polly).</summary>
+    /// <summary>Número máximo de reintentos ante 429/5xx (resiliencia).</summary>
     [Range(0, 10, ErrorMessage = "MaxRetries debe estar entre 0 y 10.")]
     public int MaxRetries { get; init; } = 3;
 
