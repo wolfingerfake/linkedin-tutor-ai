@@ -1,12 +1,13 @@
 using Azure;
+using System.ClientModel;
 using LinkedInTutorAI.Application.Exceptions;
 
 namespace LinkedInTutorAI.Infrastructure.AiFoundry;
 
 /// <summary>
-/// Traduce excepciones del SDK de Azure (<c>Azure.RequestFailedException</c>) a la jerarquía
-/// de excepciones de aplicación (<see cref="AiFoundryException"/> y derivadas) en la frontera,
-/// para que la UI nunca reciba tipos del SDK.
+/// Traduce excepciones del SDK de Azure (<c>Azure.RequestFailedException</c> y
+/// <c>System.ClientModel.ClientResultException</c>) a la jerarquía de excepciones de aplicación
+/// (<see cref="AiFoundryException"/> y derivadas) en la frontera, para que la UI nunca reciba tipos del SDK.
 /// </summary>
 public static class AgentExceptionMapper
 {
@@ -23,6 +24,19 @@ public static class AgentExceptionMapper
                 429 => new AiFoundryThrottledException("Demasiadas solicitudes. Espera unos segundos.", rfe),
                 >= 500 => new AiFoundryUnavailableException("El agente no está disponible. Intenta más tarde.", rfe),
                 _ => new AiFoundryException("Error al llamar al agente. Intenta más tarde.", rfe)
+            };
+        }
+
+        if (ex is ClientResultException cre)
+        {
+            return cre.Status switch
+            {
+                401 or 403 => new AiFoundryAuthException(
+                    "No se pudo autenticar/autorizar con el agente. Revisa la configuración y los permisos RBAC.", cre),
+                408 or 504 => new AiFoundryTimeoutException("El agente tardó demasiado. Intenta de nuevo.", cre),
+                429 => new AiFoundryThrottledException("Demasiadas solicitudes. Espera unos segundos.", cre),
+                >= 500 => new AiFoundryUnavailableException("El agente no está disponible. Intenta más tarde.", cre),
+                _ => new AiFoundryException("Error al llamar al agente. Intenta más tarde.", cre)
             };
         }
 
