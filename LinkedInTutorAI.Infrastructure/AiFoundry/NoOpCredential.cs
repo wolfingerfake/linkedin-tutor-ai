@@ -10,10 +10,10 @@ namespace LinkedInTutorAI.Infrastructure.AiFoundry;
 /// </summary>
 internal sealed class NoOpCredential : TokenCredential
 {
-    private static readonly AccessToken Empty = new(string.Empty, DateTimeOffset.MaxValue);
+    private static readonly AccessToken Dummy = new("placeholder", DateTimeOffset.MaxValue);
 
-    public override AccessToken GetToken(TokenRequestContext context, CancellationToken cancellationToken) => Empty;
+    public override AccessToken GetToken(TokenRequestContext context, CancellationToken cancellationToken) => Dummy;
 
     public override ValueTask<AccessToken> GetTokenAsync(TokenRequestContext context, CancellationToken cancellationToken)
-        => new(Empty);
+        => new(Dummy);
 }
