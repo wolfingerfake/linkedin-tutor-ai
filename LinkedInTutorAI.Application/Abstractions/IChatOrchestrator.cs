@@ -27,6 +27,6 @@ public interface IChatOrchestrator
     /// <param name="request">Solicitud del usuario.</param>
     /// <param name="userId">Identificador del usuario autenticado (propietario de la sesión).</param>
     /// <param name="ct">Token de cancelación; detiene la generación al cancelarse.</param>
-    /// <returns>Secuencia asincrónica de deltas de texto del post.</returns>
-    IAsyncEnumerable<string> GeneratePostStreamAsync(LinkedInPostRequest request, string userId, CancellationToken ct = default);
+    /// <returns>Secuencia asincrónica de <see cref="ChatStreamChunk"/> (deltas en vivo + respuesta final parseada).</returns>
+    IAsyncEnumerable<ChatStreamChunk> GeneratePostStreamAsync(LinkedInPostRequest request, string userId, CancellationToken ct = default);
 }

@@ -60,6 +60,7 @@ public partial class LinkedInGenerator
 
     private bool IsGenerating;
     private LinkedInPostResponse? Result;
+    private string StreamingPost = "";
     private string? ErrorMessage;
     private bool copied;
 
@@ -76,6 +77,7 @@ public partial class LinkedInGenerator
         IsGenerating = true;
         ErrorMessage = null;
         Result = null;
+        StreamingPost = "";
         StateHasChanged();
 
         try
@@ -102,7 +104,20 @@ public partial class LinkedInGenerator
             }
 
             using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(2));
-            Result = await Orchestrator.GeneratePostAsync(request, DemoUserId, cts.Token);
+            await foreach (var chunk in Orchestrator.GeneratePostStreamAsync(request, DemoUserId, cts.Token))
+            {
+                if (!string.IsNullOrEmpty(chunk.Delta))
+                {
+                    StreamingPost += chunk.Delta;
+                    StateHasChanged();
+                }
+
+                if (chunk.IsFinal && chunk.Response is not null)
+                {
+                    Result = chunk.Response;
+                    StateHasChanged();
+                }
+            }
         }
         catch (AiFoundryException ex)
         {

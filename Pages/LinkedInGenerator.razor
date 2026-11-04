@@ -90,6 +90,17 @@
         </div>
     }
 
+    @if (IsGenerating && !string.IsNullOrEmpty(StreamingPost))
+    {
+        <section class="lig-result lig-streaming">
+            <div class="lig-result-head">
+                <h2 class="lig-result-title">Generando…</h2>
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            </div>
+            <article class="lig-post">@StreamingPost</article>
+        </section>
+    }
+
     @if (Result is not null)
     {
         <section class="lig-result">

@@ -74,7 +74,7 @@ public sealed class ChatOrchestrator : IChatOrchestrator
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> GeneratePostStreamAsync(
+    public async IAsyncEnumerable<ChatStreamChunk> GeneratePostStreamAsync(
         LinkedInPostRequest request,
         string userId,
         [EnumeratorCancellation] CancellationToken ct = default)
@@ -96,15 +96,35 @@ public sealed class ChatOrchestrator : IChatOrchestrator
                 threadId = chunk.ThreadId;
             }
 
+            if (chunk.IsFinal)
+            {
+                continue; // no reenviamos el final del agente: emitiremos el nuestro tras persistir
+            }
+
             if (!string.IsNullOrEmpty(chunk.Delta))
             {
                 fullText.Append(chunk.Delta);
-                yield return chunk.Delta;
             }
+
+            yield return chunk;
         }
 
         // Persiste el mensaje del asistente y el thread id al terminar el stream.
         await PersistAssistantMessageAsync(session, fullText.ToString(), threadId, ct);
+
+        var response = PostResponseParser.Parse(fullText.ToString(), session.Id) with
+        {
+            FinishReason = FinishReason.Stop
+        };
+
+        yield return new ChatStreamChunk
+        {
+            Delta = string.Empty,
+            ThreadId = threadId,
+            IsFinal = true,
+            FinishReason = response.FinishReason,
+            Response = response
+        };
 
         _logger.LogInformation(
             "Post (streaming) completado para sesión {SessionId} (thread {ThreadId}).",

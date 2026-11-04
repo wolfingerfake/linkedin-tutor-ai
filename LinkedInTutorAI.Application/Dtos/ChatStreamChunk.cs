@@ -23,4 +23,10 @@ public sealed record ChatStreamChunk
 
     /// <summary>Motivo de finalización (informativo; solo relevante si <see cref="IsFinal"/>).</summary>
     public FinishReason FinishReason { get; init; } = FinishReason.Stop;
+
+    /// <summary>
+    /// Respuesta final parseada (título, post, hashtags, recomendaciones).
+    /// Solo presente en el último chunk (<see cref="IsFinal"/> = <see langword="true"/>).
+    /// </summary>
+    public LinkedInPostResponse? Response { get; init; }
 }

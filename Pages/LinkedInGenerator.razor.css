@@ -74,6 +74,8 @@
     box-shadow: var(--lig-shadow);
     animation: lig-rise .25s ease-out;
 }
+.lig-streaming { opacity: .96; }
+.lig-streaming .lig-post { border-left-color: var(--lig-accent); font-style: italic; }
 .lig-result-head {
     display: flex;
     align-items: baseline;
