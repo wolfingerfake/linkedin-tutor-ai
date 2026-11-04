@@ -118,18 +118,26 @@ public static class PostRequestMapper
         sb.AppendLine(request.PostDraft);
         sb.AppendLine();
         sb.AppendLine("Requisitos de salida:");
-        sb.AppendLine("- Devuelve ÚNICAMENTE un JSON válido, sin markdown, sin fences ni texto fuera del objeto.");
-        sb.AppendLine("- Dentro de \"publicacion\" usa saltos de línea y estructura propias de LinkedIn (hook, desarrollo, CTA).");
+        sb.AppendLine("- Estructura la respuesta con estos encabezados en mayúsculas, cada uno en su propia línea, seguido de su contenido:");
+        sb.AppendLine("  TÍTULO");
+        sb.AppendLine("  <título o gancho del post>");
+        sb.AppendLine("  PUBLICACIÓN");
+        sb.AppendLine("  <texto del post, con saltos de línea y estructura propias de LinkedIn (hook, desarrollo, CTA)>");
+        if (request.IncluirPreguntaFinal)
+        {
+            sb.AppendLine("  Termina la PUBLICACIÓN con una pregunta final que invite a comentar.");
+        }
+        if (request.IncluirHashtags)
+        {
+            sb.AppendLine("  HASHTAGS");
+            sb.AppendLine("  <una línea con 3-6 hashtags relevantes, p. ej. #MicrosoftFoundry #AzureAI>");
+        }
+        sb.AppendLine("  RECOMENDACIONES");
+        sb.AppendLine("  <una recomendación por línea>");
+        sb.AppendLine("  RESPONIBLE AI");
+        sb.AppendLine("  <una nota breve sobre uso responsabile del contenido>");
         sb.AppendLine("- No superes la longitud máxima indicada.");
-        sb.AppendLine(request.IncluirHashtags
-            ? "- Incluye 3-6 hashtags relevantes en el array \"hashtags\"."
-            : "- No incluyas hashtags.");
-        sb.AppendLine(request.IncluirPreguntaFinal
-            ? "- Termina la \"publicacion\" con una pregunta final que invite a comentar."
-            : "- No incluyas pregunta final.");
-        sb.AppendLine();
-        sb.AppendLine("Formato de salida exacto (sin texto fuera del objeto):");
-        sb.AppendLine("{ \"titulo\": \"...\", \"publicacion\": \"...\", \"hashtags\": [\"...\"], \"recomendaciones\": [\"...\"] }");
+        sb.AppendLine("- No añadas explicaciones, texto introductorio ni markdown: solo los encabezados y su contenido.");
 
         return sb.ToString();
     }
