@@ -10,11 +10,16 @@ namespace LinkedInTutorAI.Domain.Abstractions;
 /// </summary>
 public interface ITutorSessionRepository
 {
-    /// <summary>Obtiene una sesión por identificador; <see langword="null"/> si no existe.</summary>
+    /// <summary>
+    /// Obtiene una sesión por identificador; <see langword="null"/> si no existe <em>o no pertenece al usuario</em>.
+    /// La comprobación de propiedad (<paramref name="userId"/>) se hace en la frontera del repositorio
+    /// para mitigar IDOR: una sesión ajena se trata como no encontrada.
+    /// </summary>
     /// <param name="sessionId">Identificador de la sesión.</param>
+    /// <param name="userId">Identificador del usuario solicitante (propietario).</param>
     /// <param name="ct">Token de cancelación.</param>
-    /// <returns>La sesión encontrada, o <see langword="null"/>.</returns>
-    Task<TutorSession?> GetByIdAsync(Guid sessionId, CancellationToken ct = default);
+    /// <returns>La sesión si existe y es del usuario; en caso contrario, <see langword="null"/>.</returns>
+    Task<TutorSession?> GetByIdAsync(Guid sessionId, string userId, CancellationToken ct = default);
 
     /// <summary>Lista las sesiones de un usuario, ordenadas por creación descendente.</summary>
     /// <param name="userId">Identificador del usuario.</param>

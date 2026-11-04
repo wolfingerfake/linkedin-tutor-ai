@@ -15,16 +15,18 @@ public interface IChatOrchestrator
     /// Genera una publicación de LinkedIn y devuelve la respuesta completa (modo no-streaming).
     /// </summary>
     /// <param name="request">Solicitud del usuario (borrador, objetivo, tono, idioma, etc.).</param>
+    /// <param name="userId">Identificador del usuario autenticado (propietario de la sesión).</param>
     /// <param name="ct">Token de cancelación.</param>
     /// <returns>El post generado, con sugerencias y hashtags.</returns>
-    Task<LinkedInPostResponse> GeneratePostAsync(LinkedInPostRequest request, CancellationToken ct = default);
+    Task<LinkedInPostResponse> GeneratePostAsync(LinkedInPostRequest request, string userId, CancellationToken ct = default);
 
     /// <summary>
     /// Genera una publicación emitiendo los deltas de texto a medida que el agente los produce
     /// (modo streaming). El llamador ensambla el post final a partir de los deltas.
     /// </summary>
     /// <param name="request">Solicitud del usuario.</param>
+    /// <param name="userId">Identificador del usuario autenticado (propietario de la sesión).</param>
     /// <param name="ct">Token de cancelación; detiene la generación al cancelarse.</param>
     /// <returns>Secuencia asincrónica de deltas de texto del post.</returns>
-    IAsyncEnumerable<string> GeneratePostStreamAsync(LinkedInPostRequest request, CancellationToken ct = default);
+    IAsyncEnumerable<string> GeneratePostStreamAsync(LinkedInPostRequest request, string userId, CancellationToken ct = default);
 }

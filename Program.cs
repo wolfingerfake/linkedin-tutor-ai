@@ -1,11 +1,15 @@
 using linkedin_tutor_ai;
 using linkedin_tutor_ai.Data;
+using LinkedInTutorAI.Infrastructure.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+// LinkedIn Tutor AI: Azure AI Foundry (agente) + orquestador + sesiones.
+builder.Services.AddAiFoundry(builder.Configuration);
 
 builder.Services.AddSingleton<WeatherForecastService>();
 

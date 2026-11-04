@@ -25,6 +25,6 @@ public interface IAiFoundryAgentService
     /// </summary>
     /// <param name="request">Solicitud ya mapeada a <see cref="FoundryRequest"/>.</param>
     /// <param name="ct">Token de cancelación; detiene la enumeración y el run al cancelarse.</param>
-    /// <returns>Secuencia asincrónica de deltas de texto.</returns>
-    IAsyncEnumerable<string> AskStreamAsync(FoundryRequest request, CancellationToken ct = default);
+    /// <returns>Secuencia asincrónica de <see cref="ChatStreamChunk"/> (deltas de texto + thread id).</returns>
+    IAsyncEnumerable<ChatStreamChunk> AskStreamAsync(FoundryRequest request, CancellationToken ct = default);
 }
