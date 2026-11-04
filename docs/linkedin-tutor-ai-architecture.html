@@ -183,67 +183,64 @@ footer.foot{border-top:1px solid var(--rule); padding-block:22px; color:var(--mu
     <!-- 01 -->
     <section id="s1">
       <h2><span class="n">01</span>Estructura de carpetas</h2>
-      <p>Solución Clean Architecture de cuatro capas, con <code>src/</code> para el código de producción y <code>tests/</code> espejando la estructura. La regla de dependencias es estricta y unidireccional: <strong>Domain ← Application ← Infrastructure ← Web</strong>.</p>
-<pre class="tree"><span class="dim">LinkedInTutorAI/</span>
-├─ <span class="file">LinkedInTutorAI.sln</span>
-├─ <span class="dir">src/</span>
-│  ├─ <span class="dir">LinkedInTutorAI.Domain/</span>            <span class="cmt"># núcleo puro, sin dependencias externas</span>
-│  │  ├─ <span class="dir">Entities/</span>          ChatMessage · ChatThread · TutorSession · LinkedInProfile
-│  │  ├─ <span class="dir">Enums/</span>             AuthorRole · MessageStatus · AuthMode · FinishReason
-│  │  ├─ <span class="dir">Exceptions/</span>        DomainException · SessionNotFoundException
-│  │  └─ <span class="dir">Abstractions/</span>      ITutorSessionRepository
-│  │
-│  ├─ <span class="dir">LinkedInTutorAI.Application/</span>     <span class="cmt"># casos de uso + contratos</span>
-│  │  ├─ <span class="dir">Abstractions/</span>      IAiFoundryAgentService · IChatOrchestrator · ITutorSessionService
-│  │  ├─ <span class="dir">Dtos/</span>              ChatRequestDto · ChatResponseDto · ChatStreamChunkDto · SessionDto · ErrorDto
-│  │  ├─ <span class="dir">Options/</span>           TutorOptions
-│  │  ├─ <span class="dir">Orchestrators/</span>     ChatOrchestrator
-│  │  ├─ <span class="dir">Mappings/</span>          ChatMapper
-│  │  ├─ <span class="dir">Validation/</span>        ChatRequestValidator
-│  │  └─ <span class="dir">Exceptions/</span>        AiFoundryException · AiFoundryTimeoutException · AiFoundryThrottledException
-│  │
-│  ├─ <span class="dir">LinkedInTutorAI.Infrastructure/</span>  <span class="cmt"># implementaciones concretas</span>
-│  │  ├─ <span class="dir">AiFoundry/</span>         AgentsAiFoundryAgentService · AiFoundryCredentialFactory · AgentMessageMapper
-│  │  ├─ <span class="dir">Persistence/</span>       InMemoryTutorSessionRepository <span class="cmt">(o EF Core SQLite)</span>
-│  │  ├─ <span class="dir">Resilience/</span>        PollyPolicies
-│  │  └─ <span class="dir">Configuration/</span>     ServiceCollectionExtensions <span class="cmt">(AddAiFoundry)</span>
-│  │
-│  └─ <span class="dir">LinkedInTutorAI.Web/</span>              <span class="cmt"># host Blazor · composition root</span>
-│     ├─ <span class="file">Program.cs</span>          App.razor · Routes.razor
-│     ├─ <span class="dir">Components/</span>
-│     │  ├─ <span class="dir">Pages/</span>           Home.razor · TutorChat.razor
-│     │  ├─ <span class="dir">Layout/</span>          MainLayout.razor
-│     │  └─ <span class="dir">Shared/</span>          ChatBubble.razor · TypingIndicator.razor
-│     ├─ <span class="dir">State/</span>             TutorChatState <span class="cmt">(estado del circuito)</span>
-│     ├─ <span class="dir">Endpoints/</span>         ChatEndpoints <span class="cmt">(Minimal API opcional)</span>
-│     └─ <span class="file">appsettings.json</span>
+      <p>Solución Clean Architecture de cuatro capas que <strong>reutiliza el proyecto Blazor existente</strong> (<code>linkedin-tutor-ai</code>) como capa de presentación/frontend y composition root — no se crea una capa Web nueva. Sobre él se añaden tres classlibs de soporte (<code>Domain</code>, <code>Application</code>, <code>Infrastructure</code>) a las que el frontend referencia. Regla de dependencias estricta y unidireccional: <strong>Domain ← Application ← Infrastructure ← Frontend</strong>.</p>
+<pre class="tree"><span class="dim">linkedin-tutor-ai/</span>                        <span class="cmt"># repositorio · solución .slnx existente</span>
+├─ <span class="file">linkedin-tutor-ai.slnx</span>              <span class="cmt"># existente · se le añaden las 3 classlibs</span>
+│
+├─ <span class="dir">linkedin-tutor-ai/</span>                   <span class="cmt"># ★ proyecto Blazor EXISTENTE · frontend + composition root</span>
+│  ├─ <span class="file">Program.cs</span> · App.razor · Routes.razor
+│  ├─ <span class="dir">Components/</span>    Pages · Layout · Shared   <span class="cmt">(Home · TutorChat · ChatBubble)</span>
+│  ├─ <span class="dir">State/</span>          TutorChatState            <span class="cmt"># estado del circuito SignalR</span>
+│  ├─ <span class="dir">Endpoints/</span>      ChatEndpoints             <span class="cmt"># Minimal API opcional</span>
+│  ├─ <span class="dir">Dtos/ · Options/ · Validation/ · Models/</span>  <span class="cmt"># ⤴ migran a las classlibs al crearlas</span>
+│  └─ <span class="file">appsettings.json</span>
+│
+├─ <span class="dir">LinkedInTutorAI.Domain/</span>             <span class="cmt"># classlib nueva · núcleo puro (sin dependencias)</span>
+│  ├─ <span class="dir">Entities/</span>       ChatMessage · ChatThread · TutorSession · LinkedInProfile
+│  ├─ <span class="dir">Enums/</span>          AuthMode · PostGoal · PostTone · FinishReason · FoundryMessageRole
+│  ├─ <span class="dir">Exceptions/</span>     DomainException · SessionNotFoundException
+│  └─ <span class="dir">Abstractions/</span>   ITutorSessionRepository
+│
+├─ <span class="dir">LinkedInTutorAI.Application/</span>        <span class="cmt"># classlib nueva · casos de uso + contratos</span>
+│  ├─ <span class="dir">Abstractions/</span>   IAiFoundryAgentService · IChatOrchestrator · ITutorSessionService
+│  ├─ <span class="dir">Dtos/</span>           LinkedInPostRequest · LinkedInPostResponse · FoundryRequest · FoundryResponse
+│  ├─ <span class="dir">Options/</span>        FoundryOptions
+│  ├─ <span class="dir">Validation/</span>     ValidationResult · ValidationError · DtoValidator
+│  ├─ <span class="dir">Orchestrators/</span>  ChatOrchestrator
+│  └─ <span class="dir">Mappings/</span>       PostRequestMapper
+│
+├─ <span class="dir">LinkedInTutorAI.Infrastructure/</span>     <span class="cmt"># classlib nueva · implementaciones concretas</span>
+│  ├─ <span class="dir">AiFoundry/</span>      AgentsAiFoundryAgentService · AiFoundryCredentialFactory · AgentMessageMapper
+│  ├─ <span class="dir">Persistence/</span>    InMemoryTutorSessionRepository <span class="cmt">(o EF Core SQLite)</span>
+│  ├─ <span class="dir">Resilience/</span>     PollyPolicies
+│  └─ <span class="dir">Configuration/</span>  ServiceCollectionExtensions <span class="cmt">(AddAiFoundry)</span>
 │
 └─ <span class="dir">tests/</span>
    ├─ <span class="dir">LinkedInTutorAI.Domain.Tests/</span>
    ├─ <span class="dir">LinkedInTutorAI.Application.Tests/</span>
    └─ <span class="dir">LinkedInTutorAI.Infrastructure.Tests/</span>
 </pre>
-      <p class="note"><span class="t">Convención de命名</span>Los proyectos conservan el prefijo <code>LinkedInTutorAI</code> para evitar colisiones de namespaces y facilitar el despliegue con un solo ensamblado raíz. <code>Web</code> es el único proyecto con <code>Microsoft.NET.Sdk.Web</code>.</p>
+      <p class="note"><span class="t">Frontend existente · sin capa Web nueva</span>El proyecto <code>linkedin-tutor-ai</code> ya existe y se conserva como único proyecto <code>Microsoft.NET.Sdk.Web</code>: es la UI Blazor y el composition root (DI, <code>Program.cs</code>, <code>appsettings.json</code>). Las classlibs <code>Domain</code>/<code>Application</code>/<code>Infrastructure</code> se añaden como referencias. <strong>Transición:</strong> los <code>Dtos/</code>, <code>Options/</code>, <code>Validation/</code> y <code>Models/Enums/</code> ya creados viven hoy en el frontend y migran a <code>Application</code>/<code>Domain</code> al scaffoldar las classlibs (cambio de namespace <code>linkedin_tutor_ai.*</code> → <code>LinkedInTutorAI.*</code>).</p>
     </section>
 
     <!-- 02 -->
     <section id="s2">
       <h2><span class="n">02</span>Proyectos recomendados</h2>
-      <p>Cuatro proyectos con responsabilidades exclusivas. La composición final ocurre en <code>Web</code>, que referencia <code>Infrastructure</code> y <code>Application</code> pero nunca al SDK de Azure directamente.</p>
+      <p>Cuatro proyectos con responsabilidades exclusivas. La composición final ocurre en el <strong>frontend existente</strong> (<code>linkedin-tutor-ai</code>), que referencia <code>Infrastructure</code> y <code>Application</code> pero nunca al SDK de Azure directamente. No se crea una capa de presentación nueva.</p>
       <div class="tbl-wrap"><table>
         <thead><tr><th>Proyecto</th><th>SDK</th><th>Rol</th><th>Depende de</th></tr></thead>
         <tbody>
           <tr><td><strong>Domain</strong></td><td><code>Microsoft.NET.Sdk</code></td><td>Entidades, enums, excepciones de dominio y abstracciones de repositorios. Cero dependencias externas.</td><td><span class="pill d">— ninguno</span></td></tr>
           <tr><td><strong>Application</strong></td><td><code>Microsoft.NET.Sdk</code></td><td>Casos de uso (orquestador), DTOs, opciones validadas, validación de entrada y excepciones de aplicación. No conoce Azure.</td><td><span class="pill d">Domain</span></td></tr>
           <tr><td><strong>Infrastructure</strong></td><td><code>Microsoft.NET.Sdk</code></td><td>Implementa el servicio del agente con el SDK de Azure AI Foundry, fábrica de credenciales, persistencia y políticas de resiliencia.</td><td><span class="pill d">Application, Domain</span></td></tr>
-          <tr><td><strong>Web</strong></td><td><code>Microsoft.NET.Sdk.Web</code></td><td>Blazor Web App Interactive Server: UI, estado del circuito, composition root (DI), endpoints y configuración.</td><td><span class="pill d">Application, Infrastructure</span></td></tr>
+          <tr><td><strong>linkedin-tutor-ai</strong> <span class="dim">(existente · frontend)</span></td><td><code>Microsoft.NET.Sdk.Web</code></td><td>Blazor Web App Interactive Server ya migrado: UI, estado del circuito, composition root (DI), endpoints y configuración. Se reutiliza; no se crea uno nuevo.</td><td><span class="pill d">Application, Infrastructure</span></td></tr>
         </tbody>
       </table></div>
       <h3>Grafo de dependencias</h3>
       <pre class="mermaid">
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#0f766e","primaryTextColor":"#ffffff","primaryBorderColor":"#0b524c","lineColor":"#5b6573","fontFamily":"Manrope, sans-serif"}} }%%
 flowchart LR
-  W["Web<br/><b>Blazor Web App</b>"] --> I["Infrastructure<br/><b>Azure AI Foundry SDK</b>"]
+  W["linkedin-tutor-ai<br/><b>Frontend Blazor (existente)</b>"] --> I["Infrastructure<br/><b>Azure AI Foundry SDK</b>"]
   W --> A["Application<br/><b>Casos de uso · DTOs</b>"]
   I --> A
   A --> D["Domain<br/><b>Entidades · Abstracciones</b>"]
@@ -262,10 +259,10 @@ flowchart LR
       </dl>
       <h3>Application</h3>
       <dl class="stack">
-        <dt><code>IAiFoundryAgentService</code></dt><dd>Contrato del agente. <code>AskAsync(request, ct) → ChatResponseDto</code> y <code>AskStreamAsync(request, ct) → IAsyncEnumerable&lt;ChatStreamChunkDto&gt;</code>.</dd>
+        <dt><code>IAiFoundryAgentService</code></dt><dd>Contrato del agente. <code>AskAsync(request, ct) → FoundryResponse</code> y <code>AskStreamAsync(request, ct) → IAsyncEnumerable&lt;string&gt;</code> (deltas).</dd>
         <dt><code>IChatOrchestrator</code></dt><dd>Caso de uso central. <code>HandleUserMessageAsync</code> y <code>HandleUserMessageStreamAsync</code>: valida, carga sesión, llama al agente, persiste, mapea.</dd>
         <dt><code>ITutorSessionService</code></dt><dd>Ciclo de vida de sesión: crear, cargar historial, listar.</dd>
-        <dt><code>IOptions&lt;TutorOptions&gt;</code></dt><dd>Acceso tipado y validado a la configuración del agente.</dd>
+        <dt><code>IOptions&lt;FoundryOptions&gt;</code></dt><dd>Acceso tipado y validado a la configuración del agente.</dd>
       </dl>
       <p class="note"><span class="t">Por qué el contrato del agente está en Application</span>Si pusieras <code>IAiFoundryAgentService</code> en <code>Infrastructure</code>, <code>Application</code> no podría referenciarlo sin invertir la flecha de dependencia. Al declararlo en <code>Application</code> e implementarlo en <code>Infrastructure</code> se resperta la inversión de dependencias (DIP).</p>
     </section>
@@ -276,7 +273,7 @@ flowchart LR
       <p>Una implementación por contrato, con responsabilidades finas. El orquestador es el único que conoce el flujo completo; el servicio de Azure solo habla con Foundry.</p>
       <div class="grid2">
         <div class="card"><span class="tag">Infrastructure · AiFoundry</span><h4>AgentsAiFoundryAgentService</h4><p>Implementa <code>IAiFoundryAgentService</code>. Recupera el agente existente por <code>AgentId</code>, crea/abre un thread, añade el mensaje del usuario, lanza el <code>run</code> y expone los eventos de streaming como <code>IAsyncEnumerable</code>.</p></div>
-        <div class="card"><span class="tag">Infrastructure · AiFoundry</span><h4>AiFoundryCredentialFactory</h4><p>Devuelve <code>DefaultAzureCredential</code> o <code>AzureKeyCredential</code> según <code>TutorOptions.AuthMode</code>. Único punto que decide cómo autenticarse.</p></div>
+        <div class="card"><span class="tag">Infrastructure · AiFoundry</span><h4>AiFoundryCredentialFactory</h4><p>Devuelve <code>DefaultAzureCredential</code> o <code>AzureKeyCredential</code> según <code>FoundryOptions.AuthMode</code>. Único punto que decide cómo autenticarse.</p></div>
         <div class="card"><span class="tag">Infrastructure · AiFoundry</span><h4>AgentMessageMapper</h4><p>Traduce entre los modelos del SDK de Azure (<code>AgentMessage</code>, <code>RunStreamEvent</code>) y los DTOs de Application. Aísla a la app de la forma del SDK.</p></div>
         <div class="card"><span class="tag">Infrastructure · Persistence</span><h4>InMemoryTutorSessionRepository</h4><p>Persistencia académica por circuito. Sustituible por EF Core + SQLite sin tocar Application.</p></div>
         <div class="card"><span class="tag">Application</span><h4>ChatOrchestrator</h4><p>Valida la entrada, carga/crea la sesión, persiste el mensaje del usuario, invoca al agente, persiste la respuesta del asistente y mapea. Propaga <code>CancellationToken</code> en todo el camino.</p></div>
@@ -289,27 +286,26 @@ flowchart LR
     <!-- 05 -->
     <section id="s5">
       <h2><span class="n">05</span>DTOs</h2>
-      <p>Todos los DTOs viven en <code>Application/Dtos</code>. Son la única forma de datos que cruza hacia <code>Web</code>; los modelos del SDK de Azure nunca llegan a la UI.</p>
+      <p>Todos los DTOs viven en <code>Application/Dtos</code> (ya implementados hoy en el frontend; migrarán a la classlib <code>Application</code>). Son la única forma de datos que cruza hacia la UI; los modelos del SDK de Azure nunca llegan al frontend.</p>
       <div class="tbl-wrap"><table>
         <thead><tr><th>DTO</th><th>Campos clave</th><th>Uso</th></tr></thead>
         <tbody>
-          <tr><td><code>ChatRequestDto</code></td><td>SessionId, UserMessage, LinkedInProfile</td><td>Entrada del usuario + contexto de perfil para personalizar la tutoría.</td></tr>
-          <tr><td><code>ChatResponseDto</code></td><td>SessionId, MessageId, AssistantMessage, FinishReason, CreatedAt</td><td>Respuesta completa (modo no-streaming).</td></tr>
-          <tr><td><code>ChatStreamChunkDto</code></td><td>Delta, IsFinal, MessageId, SessionId</td><td>Token incremental para streaming; <code>IsFinal</code> cierra el stream.</td></tr>
-          <tr><td><code>SessionDto</code></td><td>Id, UserId, Title, CreatedAt, Messages[]</td><td>Vista de una sesión con su historial.</td></tr>
-          <tr><td><code>MessageDto</code></td><td>Id, Role (User/Assistant), Content, CreatedAt</td><td>Mensaje individual dentro del historial.</td></tr>
-          <tr><td><code>LinkedInProfileDto</code></td><td>Headline, Industry, ExperienceYears, Goals</td><td>Contexto de LinkedIn que enriquece el prompt del tutor.</td></tr>
-          <tr><td><code>ErrorDto</code></td><td>Code, Message, Details, TraceId</td><td>Representación segura de error para la UI (sin secretos ni stack traces).</td></tr>
-          <tr><td><code>TutorOptions</code></td><td>Endpoint, ProjectConnectionString, AgentId, ModelDeployment, AuthMode, ApiKey, MaxRetries, TimeoutSeconds</td><td>POCO de configuración tipada y validada con <code>IOptions&lt;T&gt;</code>.</td></tr>
+          <tr><td><code>LinkedInPostRequest</code></td><td>PostDraft, Goal, Tone, TargetAudience?, MaxLength, Language, SessionId?</td><td>Entrada del usuario para generar/mejorar un post. Record + DataAnnotations + <code>Validate()</code>.</td></tr>
+          <tr><td><code>LinkedInPostResponse</code></td><td>SessionId, GeneratedPost, Suggestions[], Hashtags[], AlternativeVersion?, FinishReason, Tokens, GeneratedAt</td><td>Post generado por el agente (salida).</td></tr>
+          <tr><td><code>FoundryRequest</code></td><td>AgentId, ThreadId?, UserMessage, Role, Metadata?, TimeoutSeconds?</td><td>Mensaje al agente de Foundry; se construye desde <code>LinkedInPostRequest</code>.</td></tr>
+          <tr><td><code>FoundryResponse</code></td><td>ThreadId?, AssistantMessage, MessageId?, FinishReason, Tokens, CreatedAt</td><td>Respuesta del agente, mapeada desde los tipos del SDK de Azure.</td></tr>
+          <tr><td><code>FoundryOptions</code></td><td>Endpoint, AgentId, ModelDeployment, AuthMode, ApiKey?, MaxRetries, TimeoutSeconds</td><td>Config tipada y validada (sección <code>AiFoundry</code>) con <code>IOptions&lt;T&gt;</code> + <code>ValidateOnStart</code>.</td></tr>
+          <tr><td><code>ValidationResult</code></td><td>IsValid, Errors[] (ValidationError)</td><td>Resultado de <code>Validate()</code>; inmutable, con <code>Success</code>/<code>Failure</code>/<code>Combine</code>.</td></tr>
+          <tr><td><code>ValidationError</code></td><td>PropertyName, Message, Code?</td><td>Error individual sobre una propiedad del DTO.</td></tr>
         </tbody>
       </table></div>
-      <p class="note"><span class="t">Perfil de LinkedIn como contexto</span>El <code>LinkedInProfileDto</code> no se guarda del lado del agente necesariamente; se inyecta como contexto en cada mensaje para que el tutor responda acorde al perfil y objetivos del usuario.</p>
+      <p class="note"><span class="t">Mapeo en la frontera</span><code>LinkedInPostRequest</code> → <code>FoundryRequest</code> se hace con <code>PostRequestMapper</code> (Application), insertando el contexto de LinkedIn (objetivo, tono, audiencia, idioma) en el <code>UserMessage</code>. <code>FoundryResponse</code> → <code>LinkedInPostResponse</code> se hace con <code>AgentMessageMapper</code> (Infrastructure). Así la UI nunca ve tipos del SDK de Azure.</p>
     </section>
 
     <!-- 06 -->
     <section id="s6">
       <h2><span class="n">06</span>Flujo de llamadas</h2>
-      <p>El modo streaming es el camino principal y el que más aprovecha el modelo server-side: los tokens viajan por <code>IAsyncEnumerable</code> sobre el circuito SignalR de Blazor y se renderizan token a token. El modo no-streaming sigue el mismo camino pero devuelve un <code>ChatResponseDto</code> completo al finalizar.</p>
+      <p>El modo streaming es el camino principal y el que más aprovecha el modelo server-side: los tokens viajan por <code>IAsyncEnumerable</code> sobre el circuito SignalR de Blazor y se renderizan token a token. El modo no-streaming sigue el mismo camino pero devuelve un <code>LinkedInPostResponse</code> completo al finalizar.</p>
       <pre class="mermaid">
 sequenceDiagram
   autonumber
@@ -324,11 +320,11 @@ sequenceDiagram
   UI->>S: SendAsync(text)
   S->>O: HandleUserMessageStreamAsync(sessionId, text, ct)
   O->>R: cargar sesión + persistir msg User
-  O->>A: AskStreamAsync(ChatRequestDto, ct)
+  O->>A: AskStreamAsync(FoundryRequest, ct)
   A->>F: abrir thread + añadir mensaje + run(agentId)
   loop streaming de eventos
     F-->>A: RunStreamEvent (delta token)
-    A-->>O: ChatStreamChunkDto
+    A-->>O: delta (string)
     O-->>S: chunk vía IAsyncEnumerable
     S-->>UI: StateHasChanged (token a token)
   end
@@ -362,7 +358,7 @@ sequenceDiagram
       </table></div>
       <h3>Mecanismos</h3>
       <ul>
-        <li><strong>Resiliencia (Polly):</strong> retry con backoff exponencial + jitter para 429/5xx, circuit breaker tras N fallos consecutivos, timeout por llamada. Configurable en <code>TutorOptions</code>.</li>
+        <li><strong>Resiliencia (Polly):</strong> retry con backoff exponencial + jitter para 429/5xx, circuit breaker tras N fallos consecutivos, timeout por llamada. Configurable en <code>FoundryOptions</code>.</li>
         <li><strong>Cancelación:</strong> <code>CancellationToken</code> en toda la cadena; el circuito caído cancela el run de Foundry.</li>
         <li><strong>Boundaries:</strong> <code>Infrastructure</code> captura <code>Azure.RequestFailedException</code> y la traduce. <code>Web</code> nunca ve tipos de Azure.</li>
         <li><strong>UI Blazor:</strong> <code>&lt;ErrorBoundary&gt;</code> envolviendo el chat; estado de error en <code>TutorChatState</code> para mensajes en línea.</li>
@@ -374,7 +370,7 @@ sequenceDiagram
     <!-- 08 -->
     <section id="s8">
       <h2><span class="n">08</span>Configuración</h2>
-      <p>Configuración tipada y validada con <code>IOptions&lt;TutorOptions&gt;</code> + <code>ValidateOnStart</code>: la app falla al arrancar si falta <code>AgentId</code> o <code>Endpoint</code>, en lugar de romper al primer mensaje. <code>AuthMode</code> alterna la credencial en runtime.</p>
+      <p>Configuración tipada y validada con <code>IOptions&lt;FoundryOptions&gt;</code> + <code>ValidateOnStart</code>: la app falla al arrancar si falta <code>AgentId</code> o <code>Endpoint</code>, en lugar de romper al primer mensaje. <code>AuthMode</code> alterna la credencial en runtime.</p>
 <pre class="code">{
   "AiFoundry": {
     "Endpoint": "https://&lt;foundry&gt;.services.ai.azure.com/api/projects/&lt;project&gt;",
@@ -393,7 +389,7 @@ sequenceDiagram
         <dt>Production</dt><dd><code>ApiKey</code> vía <em>Azure Key Vault</em> o variables de entorno. <code>AuthMode=DefaultCredential</code> + Managed Identity recomendado.</dd>
         <dt>Switch</dt><dd><code>AuthMode</code> = <code>DefaultCredential</code> | <code>ApiKey</code>. <code>ApiKey</code> solo se lee si el modo es <code>ApiKey</code>.</dd>
       </dl>
-      <p class="note"><span class="t">Validación al inicio</span>Con <code>services.AddOptions&lt;TutorOptions&gt;().Bind(config).ValidateDataAnnotations().ValidateOnStart()</code>, una configuración incompleta lanza <code>OptionsValidationException</code> durante <code>Program.cs</code>: detección temprana, no error silencioso en producción.</p>
+      <p class="note"><span class="t">Validación al inicio</span>Con <code>services.AddOptions&lt;FoundryOptions&gt;().Bind(config).ValidateDataAnnotations().ValidateOnStart()</code>, una configuración incompleta lanza <code>OptionsValidationException</code> durante <code>Program.cs</code>: detección temprana, no error silencioso en producción.</p>
     </section>
 
     <!-- 09 -->
@@ -404,15 +400,15 @@ sequenceDiagram
         <thead><tr><th>Proyecto</th><th>Paquete</th><th>Propósito</th></tr></thead>
         <tbody>
           <tr><td><strong>Domain</strong></td><td>—</td><td><span class="pill d">sin dependencias</span> Núcleo puro.</td></tr>
-          <tr><td rowspan="4"><strong>Application</strong></td><td><code>Microsoft.Extensions.Options</code></td><td><code>IOptions&lt;TutorOptions&gt;</code> tipado.</td></tr>
+          <tr><td rowspan="4"><strong>Application</strong></td><td><code>Microsoft.Extensions.Options</code></td><td><code>IOptions&lt;FoundryOptions&gt;</code> tipado.</td></tr>
           <tr><td><code>Microsoft.Extensions.Logging.Abstractions</code></td><td>Logging sin acoplamiento a una implementación.</td></tr>
-          <tr><td><code>FluentValidation</code></td><td>Validación declarativa de <code>ChatRequestDto</code> (opcional).</td></tr>
+          <tr><td><code>FluentValidation</code></td><td>Validación declarativa de <code>LinkedInPostRequest</code> (opcional).</td></tr>
           <tr><td><code>MediatR</code></td><td>CQRS: el orquestador como handler (bonus académico, opcional).</td></tr>
           <tr><td rowspan="6"><strong>Infrastructure</strong></td><td><code>Azure.AI.Agents</code></td><td>SDK oficial de agentes de Azure AI Foundry: threads, runs, streaming.</td></tr>
           <tr><td><code>Azure.Identity</code></td><td><code>DefaultAzureCredential</code> (Managed Identity / Azure CLI).</td></tr>
           <tr><td><code>Azure.Core</code></td><td>Tipos compartidos (<code>AzureKeyCredential</code>, <code>RequestFailedException</code>).</td></tr>
           <tr><td><code>Microsoft.Extensions.Http.Resilience</code></td><td>Resiliencia con Polly (retry, circuit breaker, timeout).</td></tr>
-          <tr><td><code>Microsoft.Extensions.Configuration.Binder</code></td><td>Binding de <code>TutorOptions</code>.</td></tr>
+          <tr><td><code>Microsoft.Extensions.Configuration.Binder</code></td><td>Binding de <code>FoundryOptions</code>.</td></tr>
           <tr><td><code>Microsoft.EntityFrameworkCore.Sqlite</code></td><td>Persistencia (solo si se sustituye el repo en memoria).</td></tr>
           <tr><td rowspan="2"><strong>Web</strong></td><td>framework <code>Microsoft.NET.Sdk.Web</code></td><td>ASP.NET Core 10 + Blazor (incluidos en el SDK).</td></tr>
           <tr><td><code>—</code></td><td>No referencia Azure directamente: lo resuelve vía DI desde Infrastructure.</td></tr>
@@ -423,7 +419,7 @@ sequenceDiagram
         <li><code>xunit</code> + <code>xunit.runner.visualstudio</code> — runner de pruebas.</li>
         <li><code>NSubstitute</code> o <code>Moq</code> — dobles para <code>IAiFoundryAgentService</code> y el repositorio.</li>
         <li><code>coverlet.collector</code> — cobertura de código.</li>
-        <li><code>Microsoft.Extensions.Options.DataAnnotations</code> — validar <code>TutorOptions</code> en tests.</li>
+        <li><code>Microsoft.Extensions.Options.DataAnnotations</code> — validar <code>FoundryOptions</code> en tests.</li>
       </ul>
     </section>
 
