@@ -1,0 +1,75 @@
+## .NET build output
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+
+## NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+*.nuget.props
+*.nuget.targets
+
+## Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+*.vspscc
+*.vssscc
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa]rm/
+[Aa]rm64/
+bld/
+[Bb]uild/
+build/
+msbuild.log
+msbuild.err
+msbuild.wrn
+
+## Publish
+*.[Pp]ublish.xml
+*.azurePubxml
+*.pubxml
+*.publishproj
+PublishScripts/
+*.pubxml.user
+
+## Logs
+*.log
+
+## Secrets / local settings
+appsettings.Development.json
+appsettings.*.Local.json
+secrets.json
+*.pfx
+*.key
+*.crt
+
+## JetBrains Rider
+.idea/
+*.sln.iml
+
+## VS Code
+.vscode/
+!.vscode/extensions.json
+
+## OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+## Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+TestResult.xml
