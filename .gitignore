@@ -74,3 +74,5 @@ $RECYCLE.BIN/
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
 TestResult.xml
+# Playwright MCP artifacts (browser test snapshots)
+.playwright-mcp/
