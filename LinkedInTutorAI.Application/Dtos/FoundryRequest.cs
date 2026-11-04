@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
-using linkedin_tutor_ai.Models.Enums;
-using linkedin_tutor_ai.Validation;
-using ValidationResult = linkedin_tutor_ai.Validation.ValidationResult;
+using LinkedInTutorAI.Domain.Enums;
+using LinkedInTutorAI.Application.Validation;
+using ValidationResult = LinkedInTutorAI.Application.Validation.ValidationResult;
 
-namespace linkedin_tutor_ai.Dtos;
+namespace LinkedInTutorAI.Application.Dtos;
 
 /// <summary>
 /// Solicitud enviada al agente de Azure AI Foundry.
@@ -35,7 +35,7 @@ public sealed record FoundryRequest
 
     /// <summary>
     /// Timeout en segundos para esta llamada concreta. Si es <see langword="null"/>,
-    /// se usa <see cref="linkedin_tutor_ai.Options.FoundryOptions.TimeoutSeconds"/>.
+    /// se usa <see cref="LinkedInTutorAI.Application.Options.FoundryOptions.TimeoutSeconds"/>.
     /// </summary>
     [Range(1, 300, ErrorMessage = "TimeoutSeconds debe estar entre 1 y 300.")]
     public int? TimeoutSeconds { get; init; }

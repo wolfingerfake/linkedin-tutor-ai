@@ -1,4 +1,4 @@
-namespace linkedin_tutor_ai.Models.Enums;
+namespace LinkedInTutorAI.Domain.Enums;
 
 /// <summary>
 /// Motivo por el que el agente de Azure AI Foundry finalizó la generación.

@@ -1,3 +1,6 @@
 <Solution>
   <Project Path="linkedin-tutor-ai.csproj" />
+  <Project Path="LinkedInTutorAI.Application/LinkedInTutorAI.Application.csproj" />
+  <Project Path="LinkedInTutorAI.Domain/LinkedInTutorAI.Domain.csproj" />
+  <Project Path="LinkedInTutorAI.Infrastructure/LinkedInTutorAI.Infrastructure.csproj" />
 </Solution>

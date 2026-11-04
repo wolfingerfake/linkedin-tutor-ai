@@ -1,6 +1,6 @@
-using linkedin_tutor_ai.Models.Enums;
+using LinkedInTutorAI.Domain.Enums;
 
-namespace linkedin_tutor_ai.Dtos;
+namespace LinkedInTutorAI.Application.Dtos;
 
 /// <summary>
 /// Respuesta con la publicación de LinkedIn generada por el agente.

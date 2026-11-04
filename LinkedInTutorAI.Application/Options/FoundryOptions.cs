@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
-using linkedin_tutor_ai.Models.Enums;
-using linkedin_tutor_ai.Validation;
-using ValidationResult = linkedin_tutor_ai.Validation.ValidationResult;
+using LinkedInTutorAI.Domain.Enums;
+using LinkedInTutorAI.Application.Validation;
+using ValidationResult = LinkedInTutorAI.Application.Validation.ValidationResult;
 
-namespace linkedin_tutor_ai.Options;
+namespace LinkedInTutorAI.Application.Options;
 
 /// <summary>
 /// Opciones tipadas y validadas para la conexión con Azure AI Foundry.

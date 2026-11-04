@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
-using linkedin_tutor_ai.Models.Enums;
-using linkedin_tutor_ai.Validation;
-using ValidationResult = linkedin_tutor_ai.Validation.ValidationResult;
+using LinkedInTutorAI.Domain.Enums;
+using LinkedInTutorAI.Application.Validation;
+using ValidationResult = LinkedInTutorAI.Application.Validation.ValidationResult;
 
-namespace linkedin_tutor_ai.Dtos;
+namespace LinkedInTutorAI.Application.Dtos;
 
 /// <summary>
 /// Solicitud del usuario para generar o mejorar una publicación de LinkedIn.

@@ -1,4 +1,4 @@
-namespace linkedin_tutor_ai.Models.Enums;
+namespace LinkedInTutorAI.Domain.Enums;
 
 /// <summary>
 /// Objetivo comunicacional de la publicación de LinkedIn.

@@ -1,6 +1,6 @@
-using linkedin_tutor_ai.Models.Enums;
+using LinkedInTutorAI.Domain.Enums;
 
-namespace linkedin_tutor_ai.Dtos;
+namespace LinkedInTutorAI.Application.Dtos;
 
 /// <summary>
 /// Respuesta recibida del agente de Azure AI Foundry.

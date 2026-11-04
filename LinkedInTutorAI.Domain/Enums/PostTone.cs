@@ -1,4 +1,4 @@
-namespace linkedin_tutor_ai.Models.Enums;
+namespace LinkedInTutorAI.Domain.Enums;
 
 /// <summary>
 /// Tono de redacción deseado para el post de LinkedIn.

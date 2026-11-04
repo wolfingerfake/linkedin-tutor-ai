@@ -7,4 +7,15 @@
     <RootNamespace>linkedin_tutor_ai</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="LinkedInTutorAI.Domain\**" />
+    <Compile Remove="LinkedInTutorAI.Application\**" />
+    <Compile Remove="LinkedInTutorAI.Infrastructure\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="LinkedInTutorAI.Application\LinkedInTutorAI.Application.csproj" />
+    <ProjectReference Include="LinkedInTutorAI.Infrastructure\LinkedInTutorAI.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>

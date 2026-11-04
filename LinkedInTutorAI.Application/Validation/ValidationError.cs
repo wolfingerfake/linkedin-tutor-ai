@@ -1,4 +1,4 @@
-namespace linkedin_tutor_ai.Validation;
+namespace LinkedInTutorAI.Application.Validation;
 
 /// <summary>
 /// Representa un único error de validación sobre una propiedad de un DTO.

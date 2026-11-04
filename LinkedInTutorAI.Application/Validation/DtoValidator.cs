@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace linkedin_tutor_ai.Validation;
+namespace LinkedInTutorAI.Application.Validation;
 
 /// <summary>
 /// Helper estático que ejecuta la validación por <c>DataAnnotations</c> sobre un objeto

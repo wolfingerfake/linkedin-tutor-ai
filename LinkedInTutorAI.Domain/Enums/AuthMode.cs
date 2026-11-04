@@ -1,4 +1,4 @@
-namespace linkedin_tutor_ai.Models.Enums;
+namespace LinkedInTutorAI.Domain.Enums;
 
 /// <summary>
 /// Modo de autenticación contra Azure AI Foundry.
@@ -15,7 +15,7 @@ public enum AuthMode
     /// <summary>
     /// Autenticación mediante clave de API (<c>AzureKeyCredential</c>).
     /// Útil para entornos académicos o locales sin identidad gestionada.
-    /// Requiere <see cref="linkedin_tutor_ai.Options.FoundryOptions.ApiKey"/>.
+    /// Requiere <see cref="LinkedInTutorAI.Application.Options.FoundryOptions.ApiKey"/>.
     /// </summary>
     ApiKey = 1
 }

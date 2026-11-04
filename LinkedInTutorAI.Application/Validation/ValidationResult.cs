@@ -1,4 +1,4 @@
-namespace linkedin_tutor_ai.Validation;
+namespace LinkedInTutorAI.Application.Validation;
 
 /// <summary>
 /// Resultado de validar un DTO. Inmutable; los errores se exponen como lista de solo lectura.

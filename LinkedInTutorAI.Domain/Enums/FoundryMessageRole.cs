@@ -1,4 +1,4 @@
-namespace linkedin_tutor_ai.Models.Enums;
+namespace LinkedInTutorAI.Domain.Enums;
 
 /// <summary>
 /// Rol de un mensaje dentro de la conversación con el agente de Azure AI Foundry.
