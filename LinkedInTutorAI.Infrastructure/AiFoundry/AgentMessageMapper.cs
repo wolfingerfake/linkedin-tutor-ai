@@ -2,6 +2,8 @@ using Azure.AI.Extensions.OpenAI;
 using LinkedInTutorAI.Application.Dtos;
 using LinkedInTutorAI.Domain.Enums;
 using OpenAI.Responses;
+using System.ClientModel.Primitives;
+using System.Text.Json;
 
 namespace LinkedInTutorAI.Infrastructure.AiFoundry;
 
@@ -45,4 +47,36 @@ public static class AgentMessageMapper
         IsFinal = isFinal,
         FinishReason = reason
     };
+
+    /// <summary>
+    /// Intenta extraer el delta de texto de un <see cref="StreamingResponseUpdate"/> serializado
+    /// (vía <see cref="ModelReaderWriter.Write"/>). Solo los updates de tipo
+    /// <c>response.output_text.delta</c> llevan un campo <c>"delta"</c> con el token incremental;
+    /// el resto (created/in_progress/completed/failed/…) no lo llevan y devuelven <see langword="false"/>.
+    /// Es una función pura sobre el JSON para permitir tests unitarios sin depender del SDK.
+    /// </summary>
+    /// <param name="updateJson">JSON del update serializado con <see cref="ModelReaderWriter.Write"/>.</param>
+    /// <param name="delta">Delta de texto extraída, o vacío si no aplica.</param>
+    /// <returns><see langword="true"/> si el update llevaba delta de texto.</returns>
+    public static bool TryGetOutputDelta(BinaryData updateJson, out string delta)
+    {
+        delta = string.Empty;
+        try
+        {
+            using var doc = JsonDocument.Parse(updateJson);
+            if (doc.RootElement.TryGetProperty("delta", out var dEl)
+                && dEl.ValueKind == JsonValueKind.String
+                && dEl.GetString() is { } text)
+            {
+                delta = text;
+                return true;
+            }
+        }
+        catch
+        {
+            // Best-effort: un update malformado no debe romper el stream.
+        }
+
+        return false;
+    }
 }

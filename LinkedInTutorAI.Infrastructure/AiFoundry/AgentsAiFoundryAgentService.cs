@@ -1,5 +1,6 @@
+using System.ClientModel;
+using System.ClientModel.Primitives;
 using System.Runtime.CompilerServices;
-using System.Text;
 using Azure.AI.Extensions.OpenAI;
 using Azure.AI.Projects;
 using LinkedInTutorAI.Application.Abstractions;
@@ -9,6 +10,7 @@ using LinkedInTutorAI.Application.Options;
 using LinkedInTutorAI.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OpenAI.Responses;
 
 namespace LinkedInTutorAI.Infrastructure.AiFoundry;
 
@@ -70,13 +72,66 @@ public sealed class AgentsAiFoundryAgentService : IAiFoundryAgentService
     /// <inheritdoc/>
     public async IAsyncEnumerable<ChatStreamChunk> AskStreamAsync(
         FoundryRequest request,
-        CancellationToken ct = default)
+        [EnumeratorCancellation] CancellationToken ct = default)
     {
-        // La Responses API se invoca de una vez; emitimos el texto completo como un delta
-        // y un chunk final. (El streaming token-a-token se puede añadir después
-        // con CreateResponseStreamingAsync cuando se estabilice el tipo de update.)
-        var response = await AskAsync(request, ct);
-        yield return AgentMessageMapper.ToStreamChunk(response.AssistantMessage, null, isFinal: false, FinishReason.Stop);
+        var timeoutSeconds = Math.Clamp(request.TimeoutSeconds ?? _options.TimeoutSeconds, 1, 300);
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        cts.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
+
+        // El cliente se obtiene sin await; CreateResponseStreamingAsync devuelve un
+        // AsyncCollectionResult (IAsyncEnumerable) cuyo streaming real ocurre al enumerar.
+        System.ClientModel.AsyncCollectionResult<StreamingResponseUpdate> stream;
+        try
+        {
+            var responseClient = _projectClient.ProjectOpenAIClient
+                .GetProjectResponsesClientForAgentEndpoint(request.AgentName);
+
+            stream = responseClient.CreateResponseStreamingAsync(
+                userInputText: request.UserMessage,
+                previousResponseId: null,
+                cancellationToken: cts.Token);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "Error al iniciar stream del agente {AgentName}.", request.AgentName);
+            throw AgentExceptionMapper.Map(ex);
+        }
+
+        // Se enumera manualmente para poder envolver MoveNextAsync en try/catch y mapear errores
+        // (no se puede hacer yield dentro de un try con catch: restricción del lenguaje).
+        await using var enumerator = stream.GetAsyncEnumerator(cts.Token);
+        var hasMore = true;
+        while (hasMore)
+        {
+            try
+            {
+                hasMore = await enumerator.MoveNextAsync();
+            }
+            catch (OperationCanceledException) when (cts.IsCancellationRequested && !ct.IsCancellationRequested)
+            {
+                throw new AiFoundryTimeoutException(
+                    $"Timeout agotado ({timeoutSeconds}s) esperando al agente.");
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogError(ex, "Error en stream del agente {AgentName}.", request.AgentName);
+                throw AgentExceptionMapper.Map(ex);
+            }
+
+            if (!hasMore)
+            {
+                break;
+            }
+
+            // Serializa el update a JSON (API pública del SDK) y extrae el delta de texto.
+            var updateJson = ModelReaderWriter.Write(enumerator.Current);
+            if (AgentMessageMapper.TryGetOutputDelta(updateJson, out var delta)
+                && !string.IsNullOrEmpty(delta))
+            {
+                yield return AgentMessageMapper.ToStreamChunk(delta, null, isFinal: false, FinishReason.Stop);
+            }
+        }
+
         yield return AgentMessageMapper.ToStreamChunk(string.Empty, null, isFinal: true, FinishReason.Stop);
     }
 }
