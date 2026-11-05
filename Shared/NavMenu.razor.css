@@ -1,4 +1,4 @@
-/* === NavMenu Azure/Fluent === */
+/* === NavMenu · sidebar azul marino (branding Azure) === */
 .nav-scroll {
     flex: 1;
     overflow-y: auto;
@@ -17,31 +17,31 @@
     padding: 0 1rem;
     margin: 0 .5rem;
     border-radius: var(--azure-radius);
-    color: var(--azure-body);
+    color: #C7CBD4;
     text-decoration: none;
     font-size: .9rem;
     font-weight: 500;
     white-space: nowrap;
     transition: background .12s ease, color .12s ease;
 }
-.nav-link:hover { background: var(--azure-line); color: var(--azure-ink); }
-.nav-link:focus-visible { box-shadow: var(--azure-focus); outline: none; }
+.nav-link:hover { background: rgba(255, 255, 255, .08); color: #fff; }
+.nav-link:focus-visible { box-shadow: 0 0 0 3px rgba(43, 157, 244, .5); outline: none; }
 
 .nav-ico {
     width: 16px;
     height: 16px;
     flex-shrink: 0;
-    color: var(--azure-muted);
+    color: #8A93A4;
 }
-.nav-link:hover .nav-ico,
-.nav-link.active .nav-ico { color: var(--azure-primary); }
+.nav-link:hover .nav-ico { color: #fff; }
+.nav-link.active .nav-ico { color: #2B9DF4; }
 
 .nav-label { line-height: 1; }
 
-/* Item activo — acento Azure a la izquierda + texto primario */
+/* Item activo — acento Azure bright a la izquierda + texto blanco */
 .nav-link.active {
-    background: rgba(0, 120, 212, .08);
-    color: var(--azure-primary);
+    background: rgba(43, 157, 244, .16);
+    color: #fff;
     font-weight: 600;
     position: relative;
 }
@@ -53,7 +53,7 @@
     bottom: 8px;
     width: 3px;
     border-radius: 2px;
-    background: var(--azure-primary);
+    background: #2B9DF4;
 }
 
 /* Modo colapsado: solo iconos centrados */

@@ -14,10 +14,9 @@ main {
     flex-direction: column;
 }
 
-/* Sidebar — superficie blanca, filete derecho (portal Azure) */
+/* Sidebar — azul marino profundo (branding Azure) */
 .sidebar {
-    background: var(--azure-surface);
-    border-right: 1px solid var(--azure-line);
+    background: #0B1A2E;
     width: 100%;
     flex-shrink: 0;
     display: flex;
@@ -31,14 +30,14 @@ main {
     align-items: center;
     gap: .65rem;
     padding: 0 1rem;
-    border-bottom: 1px solid var(--azure-line);
+    border-bottom: 1px solid rgba(255, 255, 255, .08);
     overflow: hidden;
 }
 .brand-mark {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--azure-primary);
+    color: #2B9DF4;
     flex-shrink: 0;
     text-decoration: none;
 }
@@ -46,7 +45,7 @@ main {
 .brand-name {
     font-size: .9rem;
     font-weight: 600;
-    color: var(--azure-ink);
+    color: #E6EAF0;
     letter-spacing: .005em;
     white-space: nowrap;
 }
