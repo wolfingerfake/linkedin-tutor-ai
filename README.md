@@ -70,23 +70,35 @@ IAiFoundryAgentService (Infrastructure)  ── CreateResponseStreamingAsync
 
 ---
 
-## Configuración de Azure AI Foundry
+## Configuración en Azure (plataforma)
 
-### 1. El agente
-Crea (o reutiliza) un agente en [Azure AI Foundry](https://ai.azure.com). Anota:
-- el **endpoint del proyecto** (p. ej. `https://<recurso>.services.ai.azure.com/api/projects/<proyecto>`)
-- el **nombre del agente** (p. ej. `agent-miagente`)
+Pasos para crear la infraestructura en Azure. Necesitas una suscripción de Azure con permisos para crear recursos.
 
-### 2. Rol RBAC (importante)
-La operación de invocar al agente (`agents/write`) requiere **RBAC de Microsoft Entra ID**. Una API key **no sirve** para llamar al agente (no es un principal de Entra). Asigna uno de estos roles a tu identidad sobre el **recurso de Foundry** (la cuenta de Cognitive Services), **no** sobre el proyecto:
+### 1. Crear el recurso y el proyecto de Azure AI Foundry
+1. Entra en [Azure AI Foundry](https://ai.azure.com) con tu cuenta de Azure.
+2. Si no tienes un **hub** (recurso de Foundry), créalo: *Manage* → *All hubs* → *New hub* (o usa el que se cree por defecto). Anota el **nombre del recurso** (p. ej. `mi-recurso`).
+3. Crea un **proyecto** dentro del hub: *New project* → nómbralo (p. ej. `miproyecto`). Anota el **endpoint del proyecto**, con la forma `https://<recurso>.services.ai.azure.com/api/projects/<proyecto>`.
+4. En el proyecto, despliega un **modelo** (p. ej. `gpt-4o-mini`) desde *Models* si tu agente lo requiere.
 
-- **Foundry Agent Consumer** — mínimo privilegio, solo invocar el endpoint del agente (recomendado para service principals)
-- **Foundry User** — lectura + acciones de datos
-- **Foundry Owner** — acceso total
+> El **modo de acceso** (RBAC de Entra vs claves) se fija al **crear el hub** y no es editable después. Para invocar al agente con una identidad de Entra (recomendado), el hub debe permitir acceso Entra. Si se creó en modo "solo RBAC", la API key **no puede** invocar al agente (ver *Problemas* más abajo).
+
+### 2. Identidad con permisos (RBAC)
+La operación de invocar al agente (`agents/write`) exige RBAC de Entra. Asigna uno de estos roles a tu identidad sobre el **recurso de Foundry** (la cuenta de Cognitive Services, en Azure Portal → IAM), **no** sobre el proyecto:
+- **Foundry Agent Consumer** — mínimo privilegio, solo invocar el endpoint del agente (recomendado para service principals).
+- **Foundry User** — lectura + acciones de datos.
+- **Foundry Owner** — acceso total.
 
 > ⚠️ El rol *Azure AI Developer* **no** cubre los agentes hospedados en Foundry (su scope es workspaces de Azure ML / hubs, no proyectos Foundry). Usa los roles *Foundry*.
 
-### 3. Autenticación — elige un modo
+### 3. Crear el agente en Foundry
+1. En [ai.azure.com](https://ai.azure.com), dentro de tu proyecto, ve a *Agents* → *New agent* (o reutiliza uno existente).
+2. Configura el agente: modelo, instrucciones/system prompt, herramientas (opcional). **Anota el nombre del agente** (p. ej. `agent-miagente`) — es el `AgentName` de la app.
+3. Pruébalo en el *playground* de Foundry para confirmar que responde.
+
+Anota también el **endpoint del proyecto** (`https://<recurso>.services.ai.azure.com/api/projects/<proyecto>`) — son los dos valores (`Endpoint` + `AgentName`) que necesita la app.
+
+### 4. Autenticación — elige un modo
+
 
 | `AuthMode` | Cómo | Cuándo |
 |---|---|---|
@@ -227,11 +239,28 @@ linkedin-tutor-ai/
 
 ---
 
+## Problemas encontrados y soluciones
+
+Registro de incidentes reales durante el desarrollo (por si a alguien le sirve):
+
+1. **403 RBAC al invocar al agente con API key.** La API key pasa la autenticación del workspace pero la operación `agents/write` exige RBAC de Entra; una clave no es un principal de Entra (`object id` vacío → `403 Forbidden`). *Solución:* autenticación con **service principal de Entra** (`ClientSecretCredential`) + rol **Foundry** asignado a ese service principal sobre la cuenta de Foundry.
+2. **Rol equivocado (`Azure AI Developer`).** Aunque suene bien, ese rol está scoped a workspaces de Azure ML / hubs, **no** a agentes de Foundry. *Solución:* usar los roles **Foundry** (Agent Consumer / User / Owner) sobre el recurso de Foundry. [Doc oficial](https://learn.microsoft.com/azure/foundry/concepts/rbac-foundry).
+3. **No había API pública para leer los deltas del stream.** En `OpenAI 2.14.0` / `Azure.AI.Extensions.OpenAI 3.0.0-beta.6` se eliminó el acumulador `StreamingResponse` y `StreamingResponseUpdate` solo expone `Kind`/`Patch`(opaco)/`SequenceNumber`. *Solución:* serializar cada update con `ModelReaderWriter.Write(update)` (API pública) y leer el campo `"delta"`, filtrando por `update.Kind == ResponseOutputTextDelta` y `"type" == "response.output_text.delta"` (para no mezclar deltas de reasoning/function-call).
+4. **`yield` dentro de un `try` con `catch`.** En el `AskStreamAsync` (`IAsyncEnumerable`) no se puede hacer `yield` dentro de un `try-catch` (restricción de C#). *Solución:* enumerar con `IAsyncEnumerator` manual y envolver solo `MoveNextAsync` en el `try-catch`, mapeando errores con `AgentExceptionMapper`.
+5. **IIS Production: la app no conectaba al agente.** `appsettings.Production.json` (commiteado con placeholders) pisaba al `appsettings.json` real en Production → `AuthMode=DefaultCredential` + endpoint placeholder → `DefaultAzureCredential` fallaba en el app pool de IIS (sin `az login`). *Solución:* quitar la sección `AiFoundry` de `appsettings.Production.json`; en Production los valores reales van por variables de entorno / Key Vault.
+6. **IIS en subdirectorio (`/foundry/`): estilos y páginas no cargaban.** El `<base href="/">` hacía que el navegador pidiera assets en la raíz del host en vez de bajo `/foundry/`. *Solución:* `Hosting:PathBase` (env var `Hosting__PathBase`) → `<base href>` dinámico + `app.UsePathBase(pathBase)`. Vacío para raíz.
+7. **Iconos SVG enormes.** Los `<svg>` sin `width`/`height` caían al tamaño por defecto (300×150) si el bundle CSS scoped no cargaba. *Solución:* `width`/`height` explícitos en cada SVG (13–20px) + tamaños proporcionales al texto adyacente.
+8. **Layout descuadrado en escritorio.** Faltaba el `@media (min-width:641px)` que pone el `.page` en `flex-direction: row` y el sidebar sticky a altura completa. *Solución:* añadir el media query.
+9. **Texto del menú en azul sobre sidebar marino.** El `<a>` de cada item lo renderiza `NavLink` (componente hijo), fuera del scope de `NavMenu.razor.css`, así que ganaba el `.nav-link` de Bootstrap (azul). *Solución:* usar `::deep` para reachedlos y fijar color blanco.
+
+---
+
 ## Estado y roadmap
 
-- ✅ Generación con streaming token-a-token
-- ✅ Auth dual: service principal (Entra) y `DefaultAzureCredential`
-- ✅ Diseño Azure/Fluent, sidebar colapsable, Ejecutar/Cancelar
+- ✅ Generación con streaming token-a-token (Responses API + `ModelReaderWriter.Write`)
+- ✅ Auth dual: service principal (Entra) y `DefaultAzureCredential` (`ApiKey` queda para otras ops, no invoca al agente)
+- ✅ Diseño Microsoft Azure / Fluent: sidebar marino colapsable, Ejecutar/Cancelar con deshabilitación, página Acerca de premium, iconos SVG
+- ✅ Publicación en IIS (subdirectorio vía `Hosting:PathBase`) y config Production sin pisar la real
 - ⏳ **Auth real**: usar el usuario autenticado en vez de `demo-user` (wiring de la capa Web pendiente)
 - ⏳ **Persistencia real**: el repositorio es en memoria (`InMemoryTutorSessionRepository`) — swap por EF Core / otro store para producción
 - ⏳ **CI** en GitHub Actions
