@@ -51,20 +51,27 @@ public static class AgentMessageMapper
     /// <summary>
     /// Intenta extraer el delta de texto de un <see cref="StreamingResponseUpdate"/> serializado
     /// (vía <see cref="ModelReaderWriter.Write"/>). Solo los updates de tipo
-    /// <c>response.output_text.delta</c> llevan un campo <c>"delta"</c> con el token incremental;
-    /// el resto (created/in_progress/completed/failed/…) no lo llevan y devuelven <see langword="false"/>.
-    /// Es una función pura sobre el JSON para permitir tests unitarios sin depender del SDK.
+    /// <c>response.output_text.delta</c> llevan un campo <c>"delta"</c> con el token incremental
+    /// de la respuesta; otros updates (reasoning, function-call arguments, audio, lifecycle…) pueden
+    /// llevar también un campo <c>"delta"</c> con semántica distinta, así que se filtra por
+    /// <c>"type"</c> para no mezclarlos en el texto streameado. El resto de updates devuelven
+    /// <see langword="false"/>. Es una función pura sobre el JSON para permitir tests unitarios
+    /// sin depender del SDK.
     /// </summary>
     /// <param name="updateJson">JSON del update serializado con <see cref="ModelReaderWriter.Write"/>.</param>
     /// <param name="delta">Delta de texto extraída, o vacío si no aplica.</param>
-    /// <returns><see langword="true"/> si el update llevaba delta de texto.</returns>
+    /// <returns><see langword="true"/> si el update era un delta de texto de salida.</returns>
     public static bool TryGetOutputDelta(BinaryData updateJson, out string delta)
     {
         delta = string.Empty;
         try
         {
             using var doc = JsonDocument.Parse(updateJson);
-            if (doc.RootElement.TryGetProperty("delta", out var dEl)
+            var root = doc.RootElement;
+            if (root.TryGetProperty("type", out var typeEl)
+                && typeEl.ValueKind == JsonValueKind.String
+                && typeEl.GetString() == "response.output_text.delta"
+                && root.TryGetProperty("delta", out var dEl)
                 && dEl.ValueKind == JsonValueKind.String
                 && dEl.GetString() is { } text)
             {

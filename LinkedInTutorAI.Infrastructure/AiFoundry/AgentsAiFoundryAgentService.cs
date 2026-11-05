@@ -123,8 +123,17 @@ public sealed class AgentsAiFoundryAgentService : IAiFoundryAgentService
                 break;
             }
 
+            // Filtro por el discriminante tipado del SDK: solo nos interesan los deltas de texto
+            // de salida. Evita serializar a JSON el resto de updates (lifecycle, reasoning, etc.) y
+            // previene mezclar deltas ajenos (function-call arguments, reasoning) en el texto.
+            var update = enumerator.Current;
+            if (update.Kind != StreamingResponseUpdateKind.ResponseOutputTextDelta)
+            {
+                continue;
+            }
+
             // Serializa el update a JSON (API pública del SDK) y extrae el delta de texto.
-            var updateJson = ModelReaderWriter.Write(enumerator.Current);
+            var updateJson = ModelReaderWriter.Write(update);
             if (AgentMessageMapper.TryGetOutputDelta(updateJson, out var delta)
                 && !string.IsNullOrEmpty(delta))
             {
