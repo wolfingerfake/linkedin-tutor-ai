@@ -1,4 +1,4 @@
-/* === Shell Azure/Fluent: sidebar colapsable + topbar === */
+/* === Shell Azure/Fluent: sidebar marino colapsable + topbar (móvil) === */
 .page {
     position: relative;
     display: flex;
@@ -50,20 +50,7 @@ main {
     white-space: nowrap;
 }
 
-/* Topbar */
-.topbar {
-    height: 48px;
-    min-height: 48px;
-    background: var(--azure-surface);
-    border-bottom: 1px solid var(--azure-line);
-    display: flex;
-    align-items: center;
-    gap: .75rem;
-    padding: 0 1rem;
-    position: sticky;
-    top: 0;
-    z-index: 20;
-}
+/* Toggle base */
 .sidebar-toggle {
     background: transparent;
     border: 0;
@@ -81,25 +68,34 @@ main {
 .sidebar-toggle:hover { background: var(--azure-line); }
 .sidebar-toggle:focus-visible { box-shadow: var(--azure-focus); outline: none; }
 
-.topbar-title {
-    font-size: .92rem;
-    font-weight: 600;
-    color: var(--azure-ink);
+/* Toggle interno (dentro del sidebar) — visible solo en escritorio */
+.sidebar-toggle--inner {
+    margin-left: auto;
+    color: #C7CBD4;
 }
-.topbar-spacer { flex: 1; }
-.topbar-aux { margin-left: auto; }
-.topbar-aux a {
-    font-size: .88rem;
-    color: var(--azure-muted);
-    text-decoration: none;
-    padding: .35rem .5rem;
-    border-radius: var(--azure-radius);
+.sidebar-toggle--inner:hover { background: rgba(255, 255, 255, .08); color: #fff; }
+
+/* Toggle externo (topbar, móvil) — oculto por defecto */
+.sidebar-toggle--outer { display: none; }
+
+/* Topbar — solo móvil */
+.topbar {
+    height: 48px;
+    min-height: 48px;
+    background: var(--azure-surface);
+    border-bottom: 1px solid var(--azure-line);
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: 0 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 20;
 }
-.topbar-aux a:hover { color: var(--azure-primary); background: var(--azure-line); }
 
 .content { padding: 1.5rem 1.5rem 3rem; }
 
-/* === Escritorio (>=641px): sidebar a la izquierda, sticky a altura completa === */
+/* === Escritorio (>=641px): sidebar a la izquierda, sticky; topbar oculto === */
 @media (min-width: 641px) {
     .page {
         flex-direction: row;
@@ -114,13 +110,20 @@ main {
         transition: width .18s ease;
     }
 
+    .topbar { display: none; }
+
     .page.is-collapsed .sidebar { width: 56px; }
     .page.is-collapsed .brand-name { display: none; }
+    .page.is-collapsed .brand-mark { display: none; }
     .page.is-collapsed .sidebar-brand { justify-content: center; padding: 0; }
+    .page.is-collapsed .sidebar-toggle--inner { margin: 0; }
 }
 
-/* === Móvil (<641px): sidebar como overlay oculto por defecto === */
+/* === Móvil (<641px): sidebar overlay; toggle externo visible === */
 @media (max-width: 640.98px) {
+    .sidebar-toggle--inner { display: none; }
+    .sidebar-toggle--outer { display: inline-flex; }
+
     .sidebar {
         position: fixed;
         top: 0;
@@ -135,7 +138,5 @@ main {
     /* En móvil, "no colapsado" = visible (overlay); "colapsado" = oculto */
     .page:not(.is-collapsed) .sidebar { transform: translateX(0); }
     .page.is-collapsed .sidebar { transform: translateX(-100%); }
-    .page.is-collapsed .brand-name { display: none; }
-    .page.is-collapsed .sidebar-brand { justify-content: center; padding: 0; }
     .content { padding: 1rem; }
 }

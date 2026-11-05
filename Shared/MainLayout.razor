@@ -11,7 +11,19 @@
                     <path d="M8.7 20h6.6L12 11.2 8.7 20Z" fill="currentColor"/>
                 </svg>
             </a>
-            <span class="brand-name">linkedin&#8209;tutor&#8209;ai</span>
+            <span class="brand-name">linkedin-tutor-ai</span>
+            <button type="button" class="sidebar-toggle sidebar-toggle--inner" @onclick="ToggleSidebar"
+                    aria-label="@(_collapsed ? "Expandir menú" : "Contraer menú")"
+                    aria-expanded="@(!_collapsed)">
+                @if (_collapsed)
+                {
+                    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                }
+                else
+                {
+                    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                }
+            </button>
         </div>
 
         <NavMenu Collapsed="_collapsed" />
@@ -19,17 +31,11 @@
 
     <main>
         <header class="topbar">
-            <button type="button" class="sidebar-toggle" @onclick="ToggleSidebar"
-                    aria-label="@(_collapsed ? "Expandir menú" : "Contraer menú")"
+            <button type="button" class="sidebar-toggle sidebar-toggle--outer" @onclick="ToggleSidebar"
+                    aria-label="@(_collapsed ? "Abrir menú" : "Cerrar menú")"
                     aria-expanded="@(!_collapsed)">
-                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                    <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-                </svg>
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
             </button>
-            <div class="topbar-spacer"></div>
-            <nav class="topbar-aux">
-                <a href="acercade">Acerca de</a>
-            </nav>
         </header>
 
         <article class="content">

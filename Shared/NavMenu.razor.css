@@ -1,4 +1,6 @@
-/* === NavMenu · sidebar azul marino (branding Azure) === */
+/* === NavMenu · sidebar azul marino (branding Azure) ===
+   Los <a> los renderiza NavLink (componente hijo), fuera del scope de
+   NavMenu, por eso se usa ::deep para reachedlos. */
 .nav-scroll {
     flex: 1;
     overflow-y: auto;
@@ -9,7 +11,7 @@
 
 .nav-item { padding: 0; }
 
-.nav-link {
+::deep .nav-link {
     display: flex;
     align-items: center;
     gap: .75rem;
@@ -17,35 +19,35 @@
     padding: 0 1rem;
     margin: 0 .5rem;
     border-radius: var(--azure-radius);
-    color: #C7CBD4;
+    color: #FFFFFF;
     text-decoration: none;
     font-size: .9rem;
     font-weight: 500;
     white-space: nowrap;
     transition: background .12s ease, color .12s ease;
 }
-.nav-link:hover { background: rgba(255, 255, 255, .08); color: #fff; }
-.nav-link:focus-visible { box-shadow: 0 0 0 3px rgba(43, 157, 244, .5); outline: none; }
+::deep .nav-link:hover { background: rgba(255, 255, 255, .08); color: #fff; }
+::deep .nav-link:focus-visible { box-shadow: 0 0 0 3px rgba(43, 157, 244, .5); outline: none; }
 
 .nav-ico {
     width: 16px;
     height: 16px;
     flex-shrink: 0;
-    color: #8A93A4;
+    color: #C7CBD4;
 }
-.nav-link:hover .nav-ico { color: #fff; }
-.nav-link.active .nav-ico { color: #2B9DF4; }
+::deep .nav-link:hover .nav-ico { color: #fff; }
+::deep .nav-link.active .nav-ico { color: #2B9DF4; }
 
 .nav-label { line-height: 1; }
 
 /* Item activo — acento Azure bright a la izquierda + texto blanco */
-.nav-link.active {
+::deep .nav-link.active {
     background: rgba(43, 157, 244, .16);
     color: #fff;
     font-weight: 600;
     position: relative;
 }
-.nav-link.active::before {
+::deep .nav-link.active::before {
     content: "";
     position: absolute;
     left: -.5rem;
@@ -57,10 +59,10 @@
 }
 
 /* Modo colapsado: solo iconos centrados */
-.page.is-collapsed .nav-link {
+.nav-scroll.is-collapsed ::deep .nav-link {
     justify-content: center;
     padding: 0;
     margin: 0 .25rem;
 }
-.page.is-collapsed .nav-label { display: none; }
-.page.is-collapsed .nav-link.active::before { display: none; }
+.nav-scroll.is-collapsed .nav-label { display: none; }
+.nav-scroll.is-collapsed ::deep .nav-link.active::before { display: none; }
