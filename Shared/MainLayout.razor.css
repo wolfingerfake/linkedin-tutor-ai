@@ -1,70 +1,122 @@
+/* === Shell Azure/Fluent: sidebar colapsable + topbar === */
 .page {
     position: relative;
     display: flex;
     flex-direction: column;
+    min-height: 100vh;
+    background: var(--azure-bg);
 }
 
 main {
     flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
 }
 
+/* Sidebar — superficie blanca, filete derecho (portal Azure) */
 .sidebar {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    background: var(--azure-surface);
+    border-right: 1px solid var(--azure-line);
+    width: 256px;
+    flex-shrink: 0;
+    transition: width .18s ease;
+    display: flex;
+    flex-direction: column;
 }
 
-.top-row {
-    background-color: #f7f7f7;
-    border-bottom: 1px solid #d6d5d5;
-    justify-content: flex-end;
-    height: 3.5rem;
+.sidebar-brand {
+    height: 48px;
+    min-height: 48px;
     display: flex;
     align-items: center;
+    gap: .65rem;
+    padding: 0 1rem;
+    border-bottom: 1px solid var(--azure-line);
+    overflow: hidden;
+}
+.brand-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--azure-primary);
+    flex-shrink: 0;
+}
+.brand-glyph { width: 22px; height: 22px; }
+.brand-name {
+    font-size: .9rem;
+    font-weight: 600;
+    color: var(--azure-ink);
+    letter-spacing: .005em;
+    white-space: nowrap;
 }
 
-    .top-row ::deep a, .top-row .btn-link {
-        white-space: nowrap;
-        margin-left: 1.5rem;
-    }
+/* Topbar */
+.topbar {
+    height: 48px;
+    min-height: 48px;
+    background: var(--azure-surface);
+    border-bottom: 1px solid var(--azure-line);
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: 0 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+.sidebar-toggle {
+    background: transparent;
+    border: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--azure-radius);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--azure-ink);
+    cursor: pointer;
+}
+.sidebar-toggle svg { width: 20px; height: 20px; }
+.sidebar-toggle:hover { background: var(--azure-line); }
+.sidebar-toggle:focus-visible { box-shadow: var(--azure-focus); outline: none; }
 
-    .top-row a:first-child {
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
+.topbar-title {
+    font-size: .92rem;
+    font-weight: 600;
+    color: var(--azure-ink);
+}
+.topbar-aux { margin-left: auto; }
+.topbar-aux a {
+    font-size: .88rem;
+    color: var(--azure-muted);
+    text-decoration: none;
+    padding: .35rem .5rem;
+    border-radius: var(--azure-radius);
+}
+.topbar-aux a:hover { color: var(--azure-primary); background: var(--azure-line); }
 
+.content { padding: 1.5rem 1.5rem 3rem; }
+
+/* Estado colapsado: sidebar a 56px (solo iconos) */
+.page.is-collapsed .sidebar { width: 56px; }
+.page.is-collapsed .brand-name { display: none; }
+.page.is-collapsed .sidebar-brand { justify-content: center; padding: 0; }
+
+/* Móvil: sidebar fija oculta por defecto, toggle la muestra como overlay */
 @media (max-width: 640.98px) {
-    .top-row:not(.auth) {
-        display: none;
-    }
-
-    .top-row.auth {
-        justify-content: space-between;
-    }
-
-    .top-row a, .top-row .btn-link {
-        margin-left: 0;
-    }
-}
-
-@media (min-width: 641px) {
-    .page {
-        flex-direction: row;
-    }
-
+    .page { flex-direction: column; }
     .sidebar {
-        width: 250px;
+        position: fixed;
+        top: 0;
+        left: 0;
         height: 100vh;
-        position: sticky;
-        top: 0;
+        width: 256px;
+        z-index: 30;
+        transform: translateX(-100%);
+        transition: transform .18s ease;
+        box-shadow: var(--azure-shadow-md);
     }
-
-    .top-row {
-        position: sticky;
-        top: 0;
-        z-index: 1;
-    }
-
-    .top-row, article {
-        padding-left: 2rem !important;
-        padding-right: 1.5rem !important;
-    }
+    .page:not(.is-collapsed) .sidebar { transform: translateX(0); }
+    .content { padding: 1rem; }
 }

@@ -11,7 +11,7 @@ namespace linkedin_tutor_ai.Pages;
 
 /// <summary>
 /// Modelo del formulario de generación. Las validaciones se declaran aquí para
-/// que <c>DataAnnotationsValidator</c> las show en línea en la UI.
+/// que <c>DataAnnotationsValidator</c> las muestre en línea en la UI.
 /// </summary>
 public sealed class LinkedInGeneratorModel
 {
@@ -62,23 +62,38 @@ public partial class LinkedInGenerator
     private LinkedInPostResponse? Result;
     private string StreamingPost = "";
     private string? ErrorMessage;
+    private string? StatusMessage;
     private bool copied;
+
+    /// <summary>CTS de la generación en curso; permite cancelar con el botón Cancelar.</summary>
+    private CancellationTokenSource? _cts;
+
+    /// <summary>True si la cancelación la inició el usuario (vs timeout del CTS).</summary>
+    private bool _userCancelled;
 
     /// <summary>Título a mostrar en el resultado (con respaldo si el agente no lo devolvió).</summary>
     private string TitleDisplay =>
         string.IsNullOrEmpty(Result?.Title) ? "Publicación generada" : Result!.Title;
 
     /// <summary>
-    /// Maneja el envío válido del formulario: construye el <see cref="LinkedInPostRequest"/>,
-    /// valida, llama al orquestador y gestiona errores y estado.
+    /// Maneja el envío válido del formulario (también al pulsar Enter en un campo):
+    /// construye el <see cref="LinkedInPostRequest"/>, valida, llama al orquestador en streaming
+    /// y gestiona errores, cancelación y estado. Mientras se ejecuta, los campos y el botón
+    /// Ejecutar quedan deshabilitados para impedir envíos dobles.
     /// </summary>
     private async Task GenerateAsync(EditContext editContext)
     {
         IsGenerating = true;
         ErrorMessage = null;
+        StatusMessage = null;
         Result = null;
         StreamingPost = "";
+        copied = false;
         StateHasChanged();
+
+        _cts?.Dispose();
+        _cts = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+        _userCancelled = false;
 
         try
         {
@@ -103,8 +118,7 @@ public partial class LinkedInGenerator
                 return;
             }
 
-            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(2));
-            await foreach (var chunk in Orchestrator.GeneratePostStreamAsync(request, DemoUserId, cts.Token))
+            await foreach (var chunk in Orchestrator.GeneratePostStreamAsync(request, DemoUserId, _cts.Token))
             {
                 if (!string.IsNullOrEmpty(chunk.Delta))
                 {
@@ -119,13 +133,20 @@ public partial class LinkedInGenerator
                 }
             }
         }
+        catch (OperationCanceledException) when (_cts is { IsCancellationRequested: true })
+        {
+            if (_userCancelled)
+            {
+                StatusMessage = "Generación cancelada.";
+            }
+            else
+            {
+                ErrorMessage = "La generación tardó demasiado. Intenta de nuevo.";
+            }
+        }
         catch (AiFoundryException ex)
         {
             ErrorMessage = ex.Message;
-        }
-        catch (OperationCanceledException)
-        {
-            ErrorMessage = "La generación tardó demasiado. Intenta de nuevo.";
         }
         catch (Exception ex)
         {
@@ -134,8 +155,22 @@ public partial class LinkedInGenerator
         finally
         {
             IsGenerating = false;
+            _cts?.Dispose();
+            _cts = null;
             StateHasChanged();
         }
+    }
+
+    /// <summary>Cancela la generación en curso (botón Cancelar).</summary>
+    private Task CancelAsync()
+    {
+        _userCancelled = true;
+        if (_cts is { IsCancellationRequested: false })
+        {
+            _cts.Cancel();
+        }
+
+        return Task.CompletedTask;
     }
 
     /// <summary>Copia la publicación generada al portapapeles.</summary>

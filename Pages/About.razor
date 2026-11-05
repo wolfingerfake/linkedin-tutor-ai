@@ -3,55 +3,91 @@
 
 <PageTitle>Acerca de · LinkedIn Tutor AI</PageTitle>
 
-<div class="about-hero">
+<section class="about-hero">
+    <span class="about-badge">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h3.2L12 4.5 17.8 20H21L12.8 2.2a1 1 0 0 0-1.7 0L3 20Z" fill="currentColor"/><path d="M8.7 20h6.6L12 11.2 8.7 20Z" fill="currentColor"/></svg>
+        Proyecto académico · Azure AI Foundry
+    </span>
     <h1>Acerca de LinkedIn Tutor AI</h1>
-    <p class="about-sub">Proyecto académico · ASP.NET Core 10 + Azure AI Foundry</p>
-</div>
+    <p class="about-sub">Tutor de IA para crear y mejorar publicaciones de LinkedIn, construido sobre un agente de Azure AI Foundry con ASP.NET Core 10 y Blazor Interactive Server.</p>
+</section>
 
-<div class="about-card">
-    <section class="about-block">
-        <h2><span class="about-ico">👤</span> Autor</h2>
+<section class="about-panel">
+    <article class="about-block">
+        <header class="about-block-head">
+            <svg class="about-ico" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M5 20c1.2-3.6 4-5.5 7-5.5s5.8 1.9 7 5.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <h2>Autor</h2>
+        </header>
         <dl class="about-list">
             <dt>Nombre</dt>
             <dd>Alejandro Pérez Maldonado</dd>
             <dt>Correo</dt>
             <dd><a href="mailto:alexandro6@hotmail.com" class="about-link">alexandro6@hotmail.com</a></dd>
         </dl>
-    </section>
+    </article>
 
-    <section class="about-block">
-        <h2><span class="about-ico">🎯</span> Objetivo</h2>
+    <article class="about-block">
+        <header class="about-block-head">
+            <svg class="about-ico" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                <circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                <circle cx="12" cy="12" r="1" fill="currentColor"/>
+            </svg>
+            <h2>Objetivo</h2>
+        </header>
         <p>
             Construir un tutor de IA que ayuda a crear y mejorar publicaciones de LinkedIn,
             aprovechando un agente existente en Azure AI Foundry. El proyecto demuestra una
             arquitectura Clean Architecture en 4 capas, ejecutada toda en servidor (Blazor Interactive Server),
             con autenticación dual y soporte de generación con y sin streaming.
         </p>
-    </section>
+    </article>
 
-    <section class="about-block">
-        <h2><span class="about-ico">⚠️</span> Disclaimer</h2>
+    <article class="about-block">
+        <header class="about-block-head">
+            <svg class="about-ico" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 3l9 16.5H3L12 3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                <path d="M12 10v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                <circle cx="12" cy="16.6" r="1" fill="currentColor"/>
+            </svg>
+            <h2>Aviso</h2>
+        </header>
         <p>
             El contenido generado por el agente es una sugerencia y debe revisarse antes de publicarse.
             La IA puede cometer errores o producir texto genérico; la responsabilidad final
-            de lo que se publica en LinkedIn es del usuario. No se comparte datos personales
+            de lo que se publica en LinkedIn es del usuario. No se comparten datos personales
             del usuario más allá del contexto necesario para redactar el post.
         </p>
-    </section>
+    </article>
 
-    <section class="about-block">
-        <h2><span class="about-ico">🧱</span> Stack técnico</h2>
+    <article class="about-block">
+        <header class="about-block-head">
+            <svg class="about-ico" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 3l9 5-9 5-9-5 9-5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                <path d="M3 13l9 5 9-5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+            </svg>
+            <h2>Stack técnico</h2>
+        </header>
         <ul class="about-stack">
-            <li><span class="badge bg-primary">.NET 10</span></li>
-            <li><span class="badge bg-info text-dark">Blazor Server</span></li>
-            <li><span class="badge bg-success">Azure AI Foundry</span></li>
-            <li><span class="badge bg-secondary">Clean Architecture</span></li>
-            <li><span class="badge bg-warning text-dark">Bootstrap 5</span></li>
+            <li class="about-chip">.NET 10</li>
+            <li class="about-chip">Blazor Server</li>
+            <li class="about-chip">Azure AI Foundry</li>
+            <li class="about-chip">Clean Architecture</li>
+            <li class="about-chip">Bootstrap 5</li>
         </ul>
-    </section>
+    </article>
 
-    <section class="about-block">
-        <h2><span class="about-ico">📅</span> Fecha</h2>
-        <p class="about-date">Última actualización: @Now.LocalDateTime.ToString("D")</p>
-    </section>
-</div>
+    <article class="about-block about-block--last">
+        <header class="about-block-head">
+            <svg class="about-ico" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="4" y="5" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M8 3v4M16 3v4M4 10h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <h2>Última actualización</h2>
+        </header>
+        <p class="about-date">@Now.LocalDateTime.ToString("D")</p>
+    </article>
+</section>
