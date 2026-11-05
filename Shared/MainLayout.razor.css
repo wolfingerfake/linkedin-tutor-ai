@@ -18,9 +18,8 @@ main {
 .sidebar {
     background: var(--azure-surface);
     border-right: 1px solid var(--azure-line);
-    width: 256px;
+    width: 100%;
     flex-shrink: 0;
-    transition: width .18s ease;
     display: flex;
     flex-direction: column;
 }
@@ -41,6 +40,7 @@ main {
     justify-content: center;
     color: var(--azure-primary);
     flex-shrink: 0;
+    text-decoration: none;
 }
 .brand-glyph { width: 20px; height: 20px; }
 .brand-name {
@@ -76,6 +76,7 @@ main {
     justify-content: center;
     color: var(--azure-ink);
     cursor: pointer;
+    flex-shrink: 0;
 }
 .sidebar-toggle svg { width: 18px; height: 18px; }
 .sidebar-toggle:hover { background: var(--azure-line); }
@@ -86,6 +87,7 @@ main {
     font-weight: 600;
     color: var(--azure-ink);
 }
+.topbar-spacer { flex: 1; }
 .topbar-aux { margin-left: auto; }
 .topbar-aux a {
     font-size: .88rem;
@@ -98,14 +100,28 @@ main {
 
 .content { padding: 1.5rem 1.5rem 3rem; }
 
-/* Estado colapsado: sidebar a 56px (solo iconos) */
-.page.is-collapsed .sidebar { width: 56px; }
-.page.is-collapsed .brand-name { display: none; }
-.page.is-collapsed .sidebar-brand { justify-content: center; padding: 0; }
+/* === Escritorio (>=641px): sidebar a la izquierda, sticky a altura completa === */
+@media (min-width: 641px) {
+    .page {
+        flex-direction: row;
+        align-items: stretch;
+    }
 
-/* Móvil: sidebar fija oculta por defecto, toggle la muestra como overlay */
+    .sidebar {
+        width: 256px;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+        transition: width .18s ease;
+    }
+
+    .page.is-collapsed .sidebar { width: 56px; }
+    .page.is-collapsed .brand-name { display: none; }
+    .page.is-collapsed .sidebar-brand { justify-content: center; padding: 0; }
+}
+
+/* === Móvil (<641px): sidebar como overlay oculto por defecto === */
 @media (max-width: 640.98px) {
-    .page { flex-direction: column; }
     .sidebar {
         position: fixed;
         top: 0;
@@ -117,6 +133,10 @@ main {
         transition: transform .18s ease;
         box-shadow: var(--azure-shadow-md);
     }
+    /* En móvil, "no colapsado" = visible (overlay); "colapsado" = oculto */
     .page:not(.is-collapsed) .sidebar { transform: translateX(0); }
+    .page.is-collapsed .sidebar { transform: translateX(-100%); }
+    .page.is-collapsed .brand-name { display: none; }
+    .page.is-collapsed .sidebar-brand { justify-content: center; padding: 0; }
     .content { padding: 1rem; }
 }
