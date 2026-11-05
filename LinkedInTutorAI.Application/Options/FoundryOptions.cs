@@ -37,6 +37,26 @@ public sealed record FoundryOptions
     /// </summary>
     public string? ApiKey { get; init; }
 
+    /// <summary>
+    /// Tenant (directory) ID del service principal de Entra ID.
+    /// Solo se utiliza cuando <see cref="AuthMode"/> = <see cref="AuthMode.ServicePrincipal"/>.
+    /// Almacénalo en User Secrets (dev) o Azure Key Vault (prod).
+    /// </summary>
+    public string? TenantId { get; init; }
+
+    /// <summary>
+    /// Application (client) ID del service principal de Entra ID.
+    /// Solo se utiliza cuando <see cref="AuthMode"/> = <see cref="AuthMode.ServicePrincipal"/>.
+    /// </summary>
+    public string? ClientId { get; init; }
+
+    /// <summary>
+    /// Client secret del service principal de Entra ID.
+    /// Solo se utiliza cuando <see cref="AuthMode"/> = <see cref="AuthMode.ServicePrincipal"/>.
+    /// Almacénalo en User Secrets (dev) o Azure Key Vault (prod); nunca lo confirmes en git.
+    /// </summary>
+    public string? ClientSecret { get; init; }
+
     /// <summary>Número máximo de reintentos ante 429/5xx (resiliencia).</summary>
     [Range(0, 10, ErrorMessage = "MaxRetries debe estar entre 0 y 10.")]
     public int MaxRetries { get; init; } = 3;
@@ -61,6 +81,19 @@ public sealed record FoundryOptions
             {
                 PropertyName = nameof(ApiKey),
                 Message = "ApiKey es obligatorio cuando AuthMode = ApiKey.",
+                Code = "AUTH"
+            });
+        }
+
+        if (AuthMode == AuthMode.ServicePrincipal
+            && (string.IsNullOrWhiteSpace(TenantId)
+                || string.IsNullOrWhiteSpace(ClientId)
+                || string.IsNullOrWhiteSpace(ClientSecret)))
+        {
+            extra.Add(new()
+            {
+                PropertyName = nameof(ClientSecret),
+                Message = "TenantId, ClientId y ClientSecret son obligatorios cuando AuthMode = ServicePrincipal.",
                 Code = "AUTH"
             });
         }

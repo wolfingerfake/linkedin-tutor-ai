@@ -12,7 +12,8 @@ namespace LinkedInTutorAI.Infrastructure.AiFoundry;
 /// <summary>
 /// Fábrica que construye un <see cref="AIProjectClient"/> eligiendo la credencial
 /// según <see cref="FoundryOptions.AuthMode"/>. Único punto que decide cómo autenticarse
-/// contra Azure AI Foundry (dual: DefaultAzureCredential o cabecera api-key).
+/// contra Azure AI Foundry (triple: DefaultAzureCredential, service principal
+/// con <c>ClientSecretCredential</c>, o cabecera <c>api-key</c>).
 /// </summary>
 public sealed class AiFoundryCredentialFactory
 {
@@ -42,6 +43,8 @@ public sealed class AiFoundryCredentialFactory
                     "AuthMode = ApiKey pero ApiKey no está configurado. Guárdalo en User Secrets o Key Vault."),
             AuthMode.ApiKey
                 => CreateWithKey(endpoint, _options.ApiKey!),
+            AuthMode.ServicePrincipal
+                => CreateWithServicePrincipal(endpoint),
             _ => CreateWithDefaultCredential(endpoint)
         };
     }
@@ -52,6 +55,25 @@ public sealed class AiFoundryCredentialFactory
             "Creando AIProjectClient con DefaultAzureCredential para {Endpoint}.",
             endpoint);
         return new AIProjectClient(endpoint, new DefaultAzureCredential());
+    }
+
+    private AIProjectClient CreateWithServicePrincipal(Uri endpoint)
+    {
+        if (string.IsNullOrWhiteSpace(_options.TenantId)
+            || string.IsNullOrWhiteSpace(_options.ClientId)
+            || string.IsNullOrWhiteSpace(_options.ClientSecret))
+        {
+            throw new InvalidOperationException(
+                "AuthMode = ServicePrincipal pero TenantId/ClientId/ClientSecret no están configurados. " +
+                "Guárdalos en User Secrets o Key Vault.");
+        }
+
+        _logger.LogInformation(
+            "Creando AIProjectClient con ClientSecretCredential (tenant {TenantId}, clientId {ClientId}) para {Endpoint}.",
+            _options.TenantId, _options.ClientId, endpoint);
+        var credential = new ClientSecretCredential(
+            _options.TenantId!, _options.ClientId!, _options.ClientSecret!);
+        return new AIProjectClient(endpoint, credential);
     }
 
     private AIProjectClient CreateWithKey(Uri endpoint, string apiKey)
