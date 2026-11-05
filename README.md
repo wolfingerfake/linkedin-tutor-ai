@@ -70,46 +70,96 @@ IAiFoundryAgentService (Infrastructure)  ── CreateResponseStreamingAsync
 
 ---
 
-## Configuración en Azure (plataforma)
+## Guía de configuración en Azure y Foundry
 
-Pasos para crear la infraestructura en Azure. Necesitas una suscripción de Azure con permisos para crear recursos.
+Guía paso a paso para dejar el sistema funcionando. Necesitas una suscripción de Azure con permisos para crear recursos. **Sustituye todos los `<placeholders>` por tus valores reales — pero nunca los confirmes en git.**
 
-### 1. Crear el recurso y el proyecto de Azure AI Foundry
+### Parte 1. Crear el recurso y el proyecto en Azure AI Foundry
+
 1. Entra en [Azure AI Foundry](https://ai.azure.com) con tu cuenta de Azure.
-2. Si no tienes un **hub** (recurso de Foundry), créalo: *Manage* → *All hubs* → *New hub* (o usa el que se cree por defecto). Anota el **nombre del recurso** (p. ej. `mi-recurso`).
-3. Crea un **proyecto** dentro del hub: *New project* → nómbralo (p. ej. `miproyecto`). Anota el **endpoint del proyecto**, con la forma `https://<recurso>.services.ai.azure.com/api/projects/<proyecto>`.
-4. En el proyecto, despliega un **modelo** (p. ej. `gpt-4o-mini`) desde *Models* si tu agente lo requiere.
+2. Crea un **hub** (el recurso de Foundry): *Manage* → *All hubs* → *New hub* (o usa el que se cree por defecto). Anota el **nombre del recurso** → `<recurso>` (p. ej. `mi-recurso`).
+3. Crea un **proyecto** dentro del hub: *New project* → nómbralo → `<proyecto>` (p. ej. `miproyecto`).
+4. Despliega un **modelo** (p. ej. `gpt-4o-mini`) desde *Models* si tu agente lo requiere.
+5. Anota el **endpoint del proyecto**:
+   ```
+   https://<recurso>.services.ai.azure.com/api/projects/<proyecto>
+   ```
+   → este será el `Endpoint` de la app.
 
 > El **modo de acceso** (RBAC de Entra vs claves) se fija al **crear el hub** y no es editable después. Para invocar al agente con una identidad de Entra (recomendado), el hub debe permitir acceso Entra. Si se creó en modo "solo RBAC", la API key **no puede** invocar al agente (ver *Problemas* más abajo).
 
-### 2. Identidad con permisos (RBAC)
-La operación de invocar al agente (`agents/write`) exige RBAC de Entra. Asigna uno de estos roles a tu identidad sobre el **recurso de Foundry** (la cuenta de Cognitive Services, en Azure Portal → IAM), **no** sobre el proyecto:
-- **Foundry Agent Consumer** — mínimo privilegio, solo invocar el endpoint del agente (recomendado para service principals).
-- **Foundry User** — lectura + acciones de datos.
-- **Foundry Owner** — acceso total.
+### Parte 2. Crear el agente en Foundry
 
-> ⚠️ El rol *Azure AI Developer* **no** cubre los agentes hospedados en Foundry (su scope es workspaces de Azure ML / hubs, no proyectos Foundry). Usa los roles *Foundry*.
+1. Dentro de tu proyecto en [ai.azure.com](https://ai.azure.com), ve a *Agents* → *New agent* (o reutiliza uno existente).
+2. Configura el agente: **modelo**, **instrucciones/system prompt**, herramientas (opcional).
+3. **Anota el nombre del agente** → `<agent-name>` (p. ej. `agent-miagente`); es el `AgentName` de la app.
+4. Pruébalo en el *playground* de Foundry y confirma que responde.
 
-### 3. Crear el agente en Foundry
-1. En [ai.azure.com](https://ai.azure.com), dentro de tu proyecto, ve a *Agents* → *New agent* (o reutiliza uno existente).
-2. Configura el agente: modelo, instrucciones/system prompt, herramientas (opcional). **Anota el nombre del agente** (p. ej. `agent-miagente`) — es el `AgentName` de la app.
-3. Pruébalo en el *playground* de Foundry para confirmar que responde.
+Al terminar esta parte tienes los dos valores que la app necesita: **`Endpoint`** y **`AgentName`**.
 
-Anota también el **endpoint del proyecto** (`https://<recurso>.services.ai.azure.com/api/projects/<proyecto>`) — son los dos valores (`Endpoint` + `AgentName`) que necesita la app.
+### Parte 3. Crear el service principal (Entra ID) — para `AuthMode=ServicePrincipal` (recomendado)
 
-### 4. Autenticación — elige un modo
+1. Entra en [Azure Portal](https://portal.azure.com) → **Microsoft Entra ID** → **Registros de aplicaciones** → **+ Nuevo registro**.
+2. **Nombre**: p. ej. `linkedin-tutor-ai-sp`. **Tipos de cuenta**: *Cuentas en este directorio organizativo solo*. **Registrar**.
+3. En la página **Información general** del app, anota:
+   - **Id. de aplicación (cliente)** → `<client-id>`
+   - **Id. de directorio (inquilino)** → `<tenant-id>`
+4. Menú izquierdo → **Certificados y secretos** → pestaña *Secretos de cliente* → **+ Nuevo secreto de cliente** → copia el **Valor** → `<client-secret>` (se oculta después; cópialo ya).
+5. **Asigna el rol Foundry** al service principal (siguiente paso).
 
+> Para desarrollo local sin service principal, usa `AuthMode=DefaultCredential` y haz `az login` con un usuario que tenga el rol Foundry. No necesitas `<client-id>`/`<tenant-id>`/`<client-secret>`.
+
+### Parte 4. Asignar el rol Foundry (RBAC)
+
+La operación de invocar al agente (`agents/write`) exige RBAC de Entra. Una API key **no sirve** (no es un principal de Entra).
+
+1. En [Azure Portal](https://portal.azure.com), busca y abre el **recurso de Foundry** (tipo *Cognitive Services* / *Azure AI Services*, nombre = `<recurso>`).
+2. **Control de acceso (IAM)** → **+ Agregar** → **Agregar asignación de roles**.
+3. Rol: **Foundry Agent Consumer** (mínimo privilegio, recomendado) o **Foundry User** / **Foundry Owner**.
+4. **Asignar acceso a**: *Usuario, grupo o entidad de servicio* → selecciona tu usuario (modo `DefaultCredential`) o el service principal `linkedin-tutor-ai-sp` (modo `ServicePrincipal`).
+5. **Revisar y asignar**.
+
+> ⚠️ El rol **Azure AI Developer** **no** cubre los agentes hospedados en Foundry (su scope es workspaces de Azure ML / hubs, no proyectos Foundry). Usa los roles **Foundry**.
+
+### Parte 5. Elegir el modo de autenticación
 
 | `AuthMode` | Cómo | Cuándo |
 |---|---|---|
-| `ServicePrincipal` (recomendado) | App Registration en Entra → `TenantId` + `ClientId` + `ClientSecret` + rol Foundry asignado al service principal | Producción / despliegue (no requiere login interactivo) |
+| `ServicePrincipal` (recomendado) | `<tenant-id>` + `<client-id>` + `<client-secret>` + rol Foundry asignado al service principal | Producción / despliegue (no requiere login interactivo) |
 | `DefaultCredential` | `az login` con un usuario que tenga el rol Foundry | Desarrollo local rápido |
 | `ApiKey` | Cabecera `api-key` | **No funciona para invocar al agente** (RBAC). Se mantiene para otras operaciones del workspace. |
 
-**Para `ServicePrincipal`** (producción):
-1. Entra ID → **Registros de aplicaciones** → **Nuevo registro** → anota **Id. de aplicación (cliente)** (`ClientId`) e **Id. de directorio (inquilino)** (`TenantId`).
-2. **Certificados y secretos** → crea un secreto de cliente → copia el **Valor** (`ClientSecret`).
-3. Asigna el rol **Foundry Agent Consumer** (o superior) al service principal sobre el recurso de Foundry.
+### Parte 6. Rellenar `appsettings.json` (valores placeholder)
+
+Sustituye los `<placeholders>` por los valores reales que anotaste en las partes 1–3. **Nunca confirmes este archivo en git** (está gitignored).
+
+```json
+{
+  "AiFoundry": {
+    "Endpoint": "https://<recurso>.services.ai.azure.com/api/projects/<proyecto>",
+    "AgentName": "<agent-name>",
+    "AuthMode": "ServicePrincipal",
+    "TenantId": "<tenant-id>",
+    "ClientId": "<client-id>",
+    "ClientSecret": "<client-secret>",
+    "MaxRetries": 3,
+    "TimeoutSeconds": 60
+  }
+}
+```
+
+Si publicas en un subdirectorio (p. ej. `/foundry/`), añade además:
+```json
+"Hosting": { "PathBase": "/foundry" }
+```
+
+Lista de comprobación antes de arrancar:
+- [ ] `Endpoint` = el endpoint del proyecto (parte 1).
+- [ ] `AgentName` = el nombre del agente (parte 2).
+- [ ] `AuthMode` = `ServicePrincipal` (o `DefaultCredential` para dev con `az login`).
+- [ ] Si `ServicePrincipal`: `TenantId`, `ClientId`, `ClientSecret` rellenos (parte 3).
+- [ ] Rol **Foundry** asignado a la identidad sobre el recurso de Foundry (parte 4).
+- [ ] Si subdirectorio: `Hosting:PathBase` indicado.
 
 ---
 
