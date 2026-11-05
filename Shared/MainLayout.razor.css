@@ -42,7 +42,7 @@ main {
     color: var(--azure-primary);
     flex-shrink: 0;
 }
-.brand-glyph { width: 22px; height: 22px; }
+.brand-glyph { width: 20px; height: 20px; }
 .brand-name {
     font-size: .9rem;
     font-weight: 600;
@@ -77,7 +77,7 @@ main {
     color: var(--azure-ink);
     cursor: pointer;
 }
-.sidebar-toggle svg { width: 20px; height: 20px; }
+.sidebar-toggle svg { width: 18px; height: 18px; }
 .sidebar-toggle:hover { background: var(--azure-line); }
 .sidebar-toggle:focus-visible { box-shadow: var(--azure-focus); outline: none; }
 

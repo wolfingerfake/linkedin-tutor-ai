@@ -17,7 +17,7 @@
     border-radius: 999px;
     margin-bottom: .9rem;
 }
-.about-badge svg { width: 14px; height: 14px; }
+.about-badge svg { width: 13px; height: 13px; }
 
 .about-hero h1 {
     margin: 0 0 .5rem;
@@ -55,8 +55,8 @@
     margin-bottom: .85rem;
 }
 .about-ico {
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
     color: var(--azure-primary);
     flex-shrink: 0;
 }

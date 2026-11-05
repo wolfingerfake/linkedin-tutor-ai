@@ -28,8 +28,8 @@
 .nav-link:focus-visible { box-shadow: var(--azure-focus); outline: none; }
 
 .nav-ico {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     flex-shrink: 0;
     color: var(--azure-muted);
 }

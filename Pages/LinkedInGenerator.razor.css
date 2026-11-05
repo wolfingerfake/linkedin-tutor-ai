@@ -18,7 +18,7 @@
     border-radius: 999px;
     margin-bottom: .9rem;
 }
-.lig-badge svg { width: 14px; height: 14px; }
+.lig-badge svg { width: 13px; height: 13px; }
 
 .lig-hero h1 {
     margin: 0 0 .4rem;
@@ -101,7 +101,7 @@
     min-width: 150px;
     justify-content: center;
 }
-.lig-run svg { width: 18px; height: 18px; }
+.lig-run svg { width: 16px; height: 16px; }
 .lig-run:disabled { opacity: .75; }
 .lig-cancel {
     display: inline-flex;
@@ -109,7 +109,7 @@
     gap: .45rem;
     color: var(--azure-body);
 }
-.lig-cancel svg { width: 16px; height: 16px; }
+.lig-cancel svg { width: 15px; height: 15px; }
 .lig-cancel:hover { color: #c50f1f; border-color: var(--azure-line-strong); }
 .lig-gen-note { color: var(--azure-muted); font-size: .85rem; }
 
@@ -127,7 +127,7 @@
     color: var(--azure-muted);
     font-size: .9rem;
 }
-.lig-status svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--azure-muted); }
+.lig-status svg { width: 15px; height: 15px; flex-shrink: 0; color: var(--azure-muted); }
 
 /* Alerta */
 .lig-alert {
@@ -143,7 +143,7 @@
     color: var(--azure-ink);
     font-size: .9rem;
 }
-.lig-alert svg { width: 20px; height: 20px; flex-shrink: 0; color: #c50f1f; margin-top: 1px; }
+.lig-alert svg { width: 18px; height: 18px; flex-shrink: 0; color: #c50f1f; margin-top: 1px; }
 
 /* Resultado / streaming */
 .lig-result {
@@ -230,7 +230,7 @@
     align-items: center;
     gap: .4rem;
 }
-.lig-copy svg { width: 16px; height: 16px; }
+.lig-copy svg { width: 15px; height: 15px; }
 .lig-meta-note { color: var(--azure-muted); font-size: .8rem; }
 
 @media (prefers-reduced-motion: reduce) {

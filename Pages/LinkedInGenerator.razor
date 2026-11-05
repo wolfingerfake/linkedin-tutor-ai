@@ -9,7 +9,7 @@
 
 <section class="lig-hero">
     <span class="lig-badge">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h3.2L12 4.5 17.8 20H21L12.8 2.2a1 1 0 0 0-1.7 0L3 20Z" fill="currentColor"/><path d="M8.7 20h6.6L12 11.2 8.7 20Z" fill="currentColor"/></svg>
+        <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M3 20h3.2L12 4.5 17.8 20H21L12.8 2.2a1 1 0 0 0-1.7 0L3 20Z" fill="currentColor"/><path d="M8.7 20h6.6L12 11.2 8.7 20Z" fill="currentColor"/></svg>
         Azure AI Foundry
     </span>
     <h1>Generador de publicaciones</h1>
@@ -71,7 +71,7 @@
 
         <div class="lig-actions">
             <button type="submit" class="btn btn-primary lig-run" disabled="@IsGenerating">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
                 @if (IsGenerating)
                 {
                     <span class="lig-run-text">Generando…</span>
@@ -85,7 +85,7 @@
             @if (IsGenerating)
             {
                 <button type="button" class="btn btn-outline-secondary lig-cancel" @onclick="CancelAsync">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                    <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
                     Cancelar
                 </button>
                 <span class="lig-gen-note">El agente está redactando tu publicación…</span>
@@ -96,7 +96,7 @@
     @if (StatusMessage is not null)
     {
         <div class="lig-status" role="status">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1.5" fill="currentColor"/></svg>
+            <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1.5" fill="currentColor"/></svg>
             @StatusMessage
         </div>
     }
@@ -104,7 +104,7 @@
     @if (ErrorMessage is not null)
     {
         <div class="lig-alert" role="alert">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 16H3L12 3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 10v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="16.4" r="1" fill="currentColor"/></svg>
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3l9 16H3L12 3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 10v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="16.4" r="1" fill="currentColor"/></svg>
             <div><strong>No se pudo generar.</strong> @ErrorMessage</div>
         </div>
     }
@@ -154,12 +154,12 @@
                 <button type="button" class="btn btn-outline-secondary btn-sm lig-copy" @onclick="CopyAsync" disabled="@copied">
                     @if (copied)
                     {
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M5 12l4 4 10-10" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         <span>Copiado</span>
                     }
                     else
                     {
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5 15V5a2 2 0 0 1 2-2h8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                        <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5 15V5a2 2 0 0 1 2-2h8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                         <span>Copiar publicación</span>
                     }
                 </button>
