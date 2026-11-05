@@ -173,6 +173,25 @@ Abre **`https://localhost:7074`** (o `http://localhost:5078`) — la página de 
 
 ---
 
+## Publicar en un subdirectorio (IIS / subcarpeta / subdominio)
+
+Si la app **no** cuelga de la raíz del host (p. ej. `https://grumexcoapps.com/foundry/`), indica el prefijo con `Hosting:PathBase` para que rutas, estáticos y el endpoint de Blazor resuelvan bajo él. En la raíz se deja vacío (sin config).
+
+- **Env var** (recomendado para IIS): `Hosting__PathBase=/foundry` (ajústala en el Application Pool del sitio).
+- **appsettings.json**: `"Hosting": { "PathBase": "/foundry" }`.
+
+El `<base href>` y el `app.UsePathBase` se ajustan automáticamente a ese valor. Para raíz, omítelo o déjalo vacío.
+
+```bash
+# Ejemplo: publicar y arrancar en un subdirectorio /foundry
+dotnet publish linkedin-tutor-ai.csproj -c Release -o ./publish
+Hosting__PathBase=/foundry dotnet ./publish/linkedin-tutor-ai.dll --urls http://localhost:5000
+```
+
+> Si publicas en IIS, copia el contenido de `publish/` al directorio del sitio (p. ej. `C:\inetpub\foundry`) y crea el sitio/aplicación apuntando ahí con `Hosting__PathBase=/foundry` en el Application Pool.
+
+---
+
 ## Cómo usar el portal
 
 1. En el **Generador**, escribe un **Tema** (obligatorio) y ajusta opcionalmente rol, audiencia, tipo, tono, longitud, hashtags y pregunta final.

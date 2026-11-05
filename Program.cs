@@ -15,6 +15,16 @@ builder.Services.AddSingleton<WeatherForecastService>();
 
 var app = builder.Build();
 
+// Sub-aplicación IIS (p. ej. https://host/foundry/): ajusta la path base para que
+// rutas, estáticos y el endpoint de Blazor resuelvan bajo el prefijo.
+// Configúralo con "Hosting:PathBase" (appsettings) o la env var
+// Hosting__PathBase. Vacío/en blanco = la app cuelga de la raíz (sin config).
+var pathBase = builder.Configuration["Hosting:PathBase"];
+if (!string.IsNullOrWhiteSpace(pathBase))
+{
+    app.UsePathBase(pathBase);
+}
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -24,9 +34,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
-
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
